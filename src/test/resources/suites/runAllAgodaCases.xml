@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="RunAllAgodaTestCases" parallel="classes" thread-count="5">
+    <listeners>
+        <listener class-name="listeners.TestListener"/>
+        <listener class-name="listeners.SuiteListener"/>
+    </listeners>
+    <test name="RunAllAgodaTestCases">
+        <classes>
+            <class name="testcases.agoda.TC01"/>
+        </classes>
+    </test>
+</suite>
