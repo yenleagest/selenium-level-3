@@ -1,4 +1,4 @@
-# 🎈 Selenium-Level-2 Automation Framework
+# 🎈 Selenium-Level-3 Automation Framework
 
 This is a **Selenium-based automation framework** designed to support **parallel execution**, **dynamic URL handling**, **Selenium Grid integration**, and **Allure reporting**. It provides a scalable and efficient solution for running automated UI tests.
 
@@ -7,6 +7,7 @@ This is a **Selenium-based automation framework** designed to support **parallel
 ## 🍺 Key Features
 - **Selenium with Selenide** – Simplified and fluent API for UI automation.
 - **Allure Reporting** – Beautiful test execution reports.
+- **Retry On Failure** - Automatically retries failed tests immediately or after the suite completes.
 - **Selenium Grid Support** – Run tests efficiently using Selenium Standalone.
 
 ---
@@ -125,7 +126,7 @@ gridURL=http://localhost:4444
 
 ### 3️⃣ Run Tests
 ```sh
-mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/suites/runAllCases.xml
+mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/suites/<suiteName>.xml
 ```
 
 ## 🎈 View Allure Report
