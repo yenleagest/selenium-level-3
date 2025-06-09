@@ -4,10 +4,10 @@ import drivers.DriverUtils;
 import org.testng.annotations.AfterMethod;
 
 
-public class TestBase extends DriverUtils {
+public class TestBase {
 
     @AfterMethod
     public void afterMethod() {
-        quitDriver();
+        DriverUtils.quitDriver();
     }
 }

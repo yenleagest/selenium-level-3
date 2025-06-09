@@ -37,7 +37,7 @@ public class DriverUtils {
 
     }
 
-    protected synchronized void openURL(String... pathSegments) {
+    public static synchronized void openURL(String... pathSegments) {
         Configuration.browser = ConfigParser.get("browser");
         Configuration.headless = ConfigParser.getBoolean("headless");
         Configuration.timeout = ConfigParser.getInt("timeout");
@@ -55,13 +55,13 @@ public class DriverUtils {
         getWebDriver().manage().window().maximize();
     }
 
-    protected synchronized void quitDriver() {
+    public static synchronized void quitDriver() {
         if (getWebDriver() != null) {
             getWebDriver().quit();
         }
     }
 
-    protected WebDriver getDriver() {
+    public static WebDriver getDriver() {
         return getWebDriver();
     }
 }

@@ -1,27 +1,30 @@
 package testcases.agoda;
 
+import drivers.DriverUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.testng.asserts.Assertion;
+import org.testng.asserts.SoftAssert;
 import testcases.TestBase;
 
 public class TC01 extends TestBase {
 
-    Assertion assertion;
+    SoftAssert softAssert;
 
     @BeforeMethod
     public void setUp() {
-        assertion = new Assertion();
-        openURL();
+        softAssert = new SoftAssert();
+        DriverUtils.openURL();
     }
 
     @Test(description = "Failed test")
     public void failedTest() {
-        assertion.assertTrue(false);
+        softAssert.assertTrue(false);
+        softAssert.assertAll();
     }
 
     @Test(description = "Passed test")
     public void passedTest() {
-        assertion.assertTrue(true);
+        softAssert.assertTrue(true);
+        softAssert.assertAll();
     }
 }
