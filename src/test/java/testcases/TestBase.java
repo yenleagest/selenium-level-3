@@ -1,13 +1,14 @@
 package testcases;
 
 import drivers.DriverUtils;
+import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 
 
 public class TestBase {
 
-    @AfterMethod
-    public void afterMethod() {
+    @AfterMethod(alwaysRun = true)
+    public void tearDown(ITestResult result) {
         DriverUtils.quitDriver();
     }
 }

@@ -1,13 +1,16 @@
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="RunAllAgodaTestCases" parallel="classes" thread-count="5">
+<suite name="VJRegression" parallel="methods">
     <listeners>
         <listener class-name="listeners.TestListener"/>
         <listener class-name="listeners.SuiteListener"/>
     </listeners>
-    <test name="RunAllAgodaTestCases">
+    <test name="VJRegression">
+        <groups>
+            <run>
+                <include name="regression"/>
+            </run>
+        </groups>
         <classes>
-            <class name="testcases.agoda.TC01"/>
-            <class name="testcases.agoda.TC02"/>
         </classes>
     </test>
 </suite>

@@ -1,5 +1,6 @@
 package listeners;
 
+import io.qameta.allure.testng.AllureTestNg;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.ISuite;
 import org.testng.ISuiteListener;
@@ -18,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 
 import static common.Constants.MAX_RETRY;
+import static common.Constants.RETRY_STRATEGY;
+import static common.Constants.THREAD_COUNT;
 
 @Slf4j
 public class SuiteListener implements ISuiteListener {
@@ -25,7 +28,16 @@ public class SuiteListener implements ISuiteListener {
     private int retryCount = 0;
 
     @Override
+    public void onStart(ISuite suite) {
+        suite.getXmlSuite().setThreadCount(THREAD_COUNT);
+    }
+
+    @Override
     public void onFinish(ISuite suite) {
+
+        if (!RETRY_STRATEGY.equalsIgnoreCase("post-suite")) {
+            return;
+        }
 
         boolean isSuiteSuccess = suite.getResults().values().stream()
                 .allMatch(result -> result.getTestContext().getFailedTests().getAllResults().isEmpty());
@@ -79,6 +91,10 @@ public class SuiteListener implements ISuiteListener {
 
         // add listener to retry multiple times
         testng.addListener(this);
+
+        // add these listeners to attach failure screenshots (if applicable)
+        testng.addListener(new AllureTestNg());
+        testng.addListener(new TestListener());
 
         log.info("Running failed tests / {} / Attempt [{}/{}]", suite.getName(), retryCount, MAX_RETRY);
 
