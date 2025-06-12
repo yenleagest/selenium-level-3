@@ -112,7 +112,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    sh "mvn test -Dbrowser=${params.BROWSER} -Dparallel=${params.PARALLEL} -Dthread-count=${params.THREAD_COUNT} -Dsurefire.suiteXmlFiles=src/test/resources/suites/${params.SUITE_NAME}.xml"
+                    sh "mvn -q test -Dbrowser=${params.BROWSER} -Dparallel=${params.PARALLEL} -Dthread-count=${params.THREAD_COUNT} -Dsurefire.suiteXmlFiles=src/test/resources/suites/${params.SUITE_NAME}.xml"
                 }
             }
         }
