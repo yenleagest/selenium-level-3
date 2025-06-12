@@ -20,17 +20,11 @@ import java.util.Map;
 
 import static common.Constants.MAX_RETRY;
 import static common.Constants.RETRY_STRATEGY;
-import static common.Constants.THREAD_COUNT;
 
 @Slf4j
 public class SuiteListener implements ISuiteListener {
 
     private int retryCount = 0;
-
-    @Override
-    public void onStart(ISuite suite) {
-        suite.getXmlSuite().setThreadCount(THREAD_COUNT);
-    }
 
     @Override
     public void onFinish(ISuite suite) {

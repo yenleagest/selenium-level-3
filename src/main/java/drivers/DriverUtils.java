@@ -38,7 +38,7 @@ public class DriverUtils {
     }
 
     public static synchronized void openURL(String... pathSegments) {
-        Configuration.browser = ConfigParser.get("browser");
+        Configuration.browser = System.getProperty("browser", "chrome");
         Configuration.headless = ConfigParser.getBoolean("headless");
         Configuration.timeout = ConfigParser.getInt("timeout");
         Configuration.pageLoadStrategy = ConfigParser.get("pageLoadStrategy");

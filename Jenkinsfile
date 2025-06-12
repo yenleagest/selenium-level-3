@@ -29,6 +29,12 @@ pipeline {
             description: 'Specify the browser to run the tests.'
         )
         choice(
+            name: 'PARALLEL',
+            choices: ['methods', 'classes', 'tests'],
+            description: 'Parallel execution mode for tests.'
+        )
+
+        choice(
             name: 'THREAD_COUNT',
             choices: [5, 1, 2, 3, 4],
             description: 'Number of threads to run tests concurrently.'
@@ -106,8 +112,7 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                    def suiteName = params.SUITE_NAME
-                    sh "mvn -q clean test -Dsurefire.suiteXmlFiles=src/test/resources/suites/${suiteName}.xml"
+                    sh "mvn test -Dbrowser=${params.BROWSER} -Dparallel=${params.PARALLEL} -Dthread-count=${params.THREAD_COUNT} -Dsurefire.suiteXmlFiles=src/test/resources/suites/${params.SUITE_NAME}.xml"
                 }
             }
         }
