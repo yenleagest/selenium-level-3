@@ -126,7 +126,7 @@ gridURL=http://localhost:4444
 
 ### 3️⃣ Run Tests
 ```sh
-mvn clean test -Dsurefire.suiteXmlFiles=src/test/resources/suites/<suiteName>.xml
+mvn test -Dbrowser=chrome -Dparallel=methods -Dthread-count=5 -Dsurefire.suiteXmlFiles=src/test/resources/suites/AgodaSmoke.xml
 ```
 
 ## 🎈 View Allure Report

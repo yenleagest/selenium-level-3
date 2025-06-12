@@ -2,9 +2,9 @@ package retriers;
 
 import org.testng.IRetryAnalyzer;
 import org.testng.ITestResult;
-import utils.ConfigParser;
 
 import static common.Constants.MAX_RETRY;
+import static common.Constants.RETRY_STRATEGY;
 
 public class RetryAnalyzer implements IRetryAnalyzer {
 
@@ -12,6 +12,6 @@ public class RetryAnalyzer implements IRetryAnalyzer {
 
     @Override
     public boolean retry(ITestResult result) {
-        return ConfigParser.get("retryStrategy").equalsIgnoreCase("immediate") && retryCount++ < MAX_RETRY;
+        return RETRY_STRATEGY.equalsIgnoreCase("immediate") && retryCount++ < MAX_RETRY;
     }
 }
