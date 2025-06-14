@@ -5,11 +5,6 @@
         <listener class-name="listeners.SuiteListener"/>
     </listeners>
     <test name="AgodaRegression">
-        <groups>
-            <run>
-                <include name="regression"/>
-            </run>
-        </groups>
         <classes>
             <class name="testcases.agoda.TC01"/>
             <class name="testcases.agoda.TC02"/>

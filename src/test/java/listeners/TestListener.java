@@ -16,7 +16,6 @@ import java.lang.reflect.Method;
 
 public class TestListener implements ITestListener, IAnnotationTransformer {
 
-
     @Override
     public void onStart(ITestContext context) {
         AllureManager.setupAllureReporting();

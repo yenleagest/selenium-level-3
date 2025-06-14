@@ -19,21 +19,35 @@ pipeline {
             description: 'Enter the git branch to build.'
         )
         choice(
-            name: 'SUITE_NAME',
-            choices: ['AgodaRegression', 'AgodaSmoke', 'VJRegression', 'VJSmoke'],
-            description: 'Select the test suite to run.'
-        )
-        choice(
             name: 'BROWSER',
             choices: ['Chrome', 'FireFox'],
             description: 'Specify the browser to run the tests.'
         )
+        string(
+            name: 'DEFAULT_TIMEOUT',
+            defaultValue: '20000',
+            description: 'Set the default time out for tests (in milliseconds).'
+        )
         choice(
-            name: 'PARALLEL',
+            name: 'ENVIRONMENT',
+            choices: ['agoda', 'vj_en', 'vj_ko', 'vj_vi'],
+            description: 'Specify an environment to run tests.'
+        )
+        choice(
+            name: 'SUITE_NAME',
+            choices: ['AgodaRegression', 'VJRegression'],
+            description: 'Select the test suite to run.'
+        )
+        choice(
+            name: 'TEST_GROUP',
+            choices: ['smoke', 'regression'],
+            description: 'Select which test group to run.'
+        )
+        choice(
+            name: 'PARALLEL_MODE',
             choices: ['methods', 'classes', 'tests'],
             description: 'Parallel execution mode for tests.'
         )
-
         choice(
             name: 'THREAD_COUNT',
             choices: [5, 1, 2, 3, 4],
@@ -46,7 +60,7 @@ pipeline {
         )
         choice(
             name: 'RETRY_STRATEGY',
-            choices: ['Immediate', 'PostSuite'],
+            choices: ['immediate', 'post-suite'],
             description: 'Retry strategy for failed tests.'
         )
         string(
@@ -76,43 +90,60 @@ pipeline {
             }
         }
 
-        stage('Update Configure') {
-            steps {
-                script {
-                    echo 'Loading configurations'
-                    def configFile = "config.properties"
-                    def props = readProperties file: configFile
-
-                    props['browser'] = params.BROWSER
-                    props['threadCount'] = params.THREAD_COUNT
-                    props['maxRetry'] = params.MAX_RETRY
-                    props['retryStrategy'] = params.RETRY_STRATEGY
-                    props['headless'] = "true"
-                    if (params.SUITE_NAME.contains('Agoda')) {
-                        props['environment'] = "agoda"
-                    } else if (params.SUITE_NAME.contains('VJ')) {
-                        props['environment'] = "vj"
-                    }
-
-                    def updatedContent = props.collect { k, v -> "${k}=${v}" }.join('\n')
-                    writeFile(file: configFile, text: updatedContent)
-                }
-            }
-        }
-
         stage('Build & Compile') {
             steps {
                 echo 'Compiling the project...'
-                sh '''
+                sh """
                     [ -d "allure-results" ] && rm -rf allure-results
-                    mvn -q clean compile'''
+                    mvn -q clean compile
+                """
             }
         }
 
         stage('Run Tests') {
             steps {
                 script {
-                    sh "mvn -q test -Dbrowser=${params.BROWSER} -Dparallel=${params.PARALLEL} -Dthread-count=${params.THREAD_COUNT} -Dsurefire.suiteXmlFiles=src/test/resources/suites/${params.SUITE_NAME}.xml"
+                    // read the previous testng-results.xml to capture the last <suite started-at="..."> timestamp
+                    def previousStartTime = null
+                    def suiteXml = 'target/surefire-reports/testng-results.xml'
+                    if (fileExists(suiteXml)) {
+                        def content = readFile(suiteXml)
+                        def matcher = content =~ /<suite[^>]+started-at="([^"]+)"/
+                        if (matcher.find()) {
+                            previousStartTime = matcher.group(1)
+                            echo "Previous start time detected: ${previousStartTime}"
+                        }
+                    }
+
+                    sh """
+                        mvn -q test \
+                        -Dbrowser=${params.BROWSER} \
+                        -Dheadless=true \
+                        -Dtimeout=${params.DEFAULT_TIMEOUT} \
+                        -Denvironment=${params.ENVIRONMENT} \
+                        -Dsurefire.suiteXmlFiles=src/test/resources/suites/${params.SUITE_NAME}.xml \
+                        -Dgroups=${params.TEST_GROUP} \
+                        -Dparallel=${params.PARALLEL_MODE} \
+                        -DthreadCount=${params.THREAD_COUNT} \
+                        -DmaxRetry=${params.MAX_RETRY} \
+                        -DretryStrategy=${params.RETRY_STRATEGY}
+                    """
+
+                    // wait for a new testng-results.xml to be generated by comparing the updated <suite started-at="..."> timestamp
+                    if (previousStartTime != null) {
+                        timeout(time: 10, unit: 'SECONDS') {
+                            waitUntil {
+                                def refreshed = readFile(suiteXml)
+                                def matcher = refreshed =~ /<suite[^>]+started-at="([^"]+)"/
+                                if (matcher.find()) {
+                                    def newTime = matcher.group(1)
+                                    return newTime != previousStartTime
+                                }
+                                return false
+                            }
+                            echo "Detected updated testng-results.xml with new suite start time."
+                        }
+                    }
                 }
             }
         }
@@ -123,10 +154,91 @@ pipeline {
             allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
             script {
                 if (params.EMAIL_RECIPIENTS) {
+                    // obtain the test results from the testng-results.xml
+                    def passed = 0
+                    def failed = 0
+                    def skipped = 0
+                    def retried = 0
+                    def ignored = 0
+                    def total = 0
+
+                    if (fileExists('target/surefire-reports/testng-results.xml')) {
+                        def content = readFile('target/surefire-reports/testng-results.xml')
+                        def matcher = content =~ /<testng-results[^>]*ignored="(\d+)"[^>]*total="(\d+)"[^>]*passed="(\d+)"[^>]*failed="(\d+)"[^>]*skipped="(\d+)"/
+                        if (matcher.find()) {
+                            ignored = matcher.group(1).toInteger()
+                            total = matcher.group(2).toInteger()
+                            passed = matcher.group(3).toInteger()
+                            failed = matcher.group(4).toInteger()
+                            skipped = matcher.group(5).toInteger()
+                        }
+                    }
+
+                    def isBuildSuccess = currentBuild.currentResult == 'SUCCESS'
+                    if (isBuildSuccess && failed != 0) {
+                        passed += failed
+                        retried = failed
+                        failed = 0
+                    }
+                    total = total - ignored
+
+                    // generate html report to attach to the email
+                    sh """
+                        allure generate --clean --single-file allure-results -o allure-report
+                        mv allure-report/index.html allure-report/report.html
+                    """
+
                     emailext(
-                        subject: "Build Notifications <jenkins-yenle-sel3.org> #${env.BUILD_NUMBER} - ${currentBuild.currentResult}",
-                        body: "The suite ${params.SUITE_NAME} finished with status: ${currentBuild.currentResult}\n\nCheck it here: ${env.BUILD_URL}",
-                        to: "${params.EMAIL_RECIPIENTS}"
+                        subject: "Build Notifications - #${env.BUILD_NUMBER} - ${params.SUITE_NAME} - ${currentBuild.currentResult}",
+                        body: """
+                        <html>
+                        <head></head>
+                        <body style="font-family: Arial, sans-serif;">
+                            <h3>🧪 <b style='color:${isBuildSuccess ? 'green' : 'red'};'>${currentBuild.currentResult}</b> Report Summary</h3>
+
+                            <ul>
+                                <li><b>Project:</b> Selenium3</li>
+                                <li><b>Branch:</b> ${params.GIT_BRANCH}</li>
+                                <li><b>Browser:</b> ${params.BROWSER}</li>
+                                <li><b>Default Timeout:</b> ${params.DEFAULT_TIMEOUT}</li>
+                                <li><b>Environment:</b> ${params.ENVIRONMENT}</li>
+                                <li><b>Suite:</b> ${params.SUITE_NAME}</li>
+                                <li><b>Test Group:</b> ${params.TEST_GROUP}</li>
+                                <li><b>Parallel Mode:</b> ${params.PARALLEL_MODE}</li>
+                                <li><b>Thread Count:</b> ${params.THREAD_COUNT}</li>
+                                <li><b>Max Retry:</b> ${params.MAX_RETRY}</li>
+                                <li><b>Retry Strategy:</b> ${params.RETRY_STRATEGY}</li>
+                                <li><b>Triggered By:</b> ${currentBuild.getBuildCauses('hudson.model.Cause$UserIdCause')[0]?.userName ?: 'Auto Trigger or SCM'}</li>
+                                <li><b>Build Duration:</b> ${currentBuild.durationString.replace(' and counting', '')}</li>
+                                <li><b>Start Time:</b> ${new Date(currentBuild.getStartTimeInMillis()).format("yyyy-MM-dd hh:mm:ss a z", TimeZone.getTimeZone('ICT'))}</li>
+                                <li><b>End Time:</b> ${new Date().format("yyyy-MM-dd hh:mm:ss a z", TimeZone.getTimeZone('ICT'))}</li>
+                            </ul>
+
+                            <p><b>🎲 Test Status Summary:</b></p>
+                            <table border="2" cellpadding="7" cellspacing="0" style="border-collapse: collapse; width: 40%; text-align: left;">
+                                <thead style="background-color: #d3eedf;">
+                                    <tr>
+                                        <th style="width: 30%;">Status</th>
+                                        <th style="width: 70%;">Count</th>
+                                    </tr>
+                                </thead>
+                                 <tbody style="background-color: #f6fbf9;">
+                                    <tr><td><b>Total</b></td><td>${total}</td></tr>
+                                    <tr><td><b>Passed</b></td><td>${passed}</td></tr>
+                                    <tr><td><b>Failed</b></td><td>${failed}</td></tr>
+                                    <tr><td><b>Retried</b></td><td>${retried}</td></tr>
+                                    <tr><td><b>Skipped</b></td><td>${skipped}</td></tr>
+                                </tbody>
+                            </table>
+
+                            <p style="margin-top: 20px;">📦 <a href="${env.BUILD_URL}">View Jenkins Build</a></p>
+                            <p><b>⛑️ Note:</b> If you can’t access the Jenkins build, please download the attached <code>report.html</code> file, and open it in your browser to view the test report.</p>
+                        </body>
+                        </html>
+                        """,
+                        mimeType: 'text/html',
+                        to: "${params.EMAIL_RECIPIENTS}",
+                        attachmentsPattern: 'allure-report/report.html',
                     )
                 } else {
                     echo "No recipients specified. Skipping email notification."

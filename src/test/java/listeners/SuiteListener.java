@@ -55,7 +55,7 @@ public class SuiteListener implements ISuiteListener {
         retrySuite.setName(suite.getName());
 
         XmlTest xmlTest = new XmlTest(retrySuite);
-        xmlTest.setName(suite.getName());
+        xmlTest.setName("[Retry] %s".formatted(suite.getName()));
 
         List<XmlClass> retryClasses = new ArrayList<>();
 
