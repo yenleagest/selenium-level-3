@@ -179,6 +179,7 @@ pipeline {
                         passed += failed
                         retried = failed
                         failed = 0
+                        total += retried
                     }
                     total = total - ignored
 
