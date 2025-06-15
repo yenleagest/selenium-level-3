@@ -1,75 +1,52 @@
 pipeline {
     agent any
-
     tools {
         maven 'Maven 3'
         jdk 'JDK 21'
     }
-
     // trigger the default suite at 4 AM
     triggers {
         cron('0 4 * * *')
     }
-
     // define jenkins parameters
     parameters {
-        string(
-            name: 'GIT_BRANCH',
-            defaultValue: 'develop',
-            description: 'Enter the git branch to build.'
-        )
-        choice(
-            name: 'BROWSER',
-            choices: ['Chrome', 'FireFox'],
-            description: 'Specify the browser to run the tests.'
-        )
-        string(
-            name: 'DEFAULT_TIMEOUT',
-            defaultValue: '20000',
-            description: 'Set the default time out for tests (in milliseconds).'
-        )
-        choice(
-            name: 'ENVIRONMENT',
-            choices: ['agoda', 'vj_en', 'vj_ko', 'vj_vi'],
-            description: 'Specify an environment to run tests.'
-        )
-        choice(
-            name: 'SUITE_NAME',
-            choices: ['AgodaRegression', 'VJRegression'],
-            description: 'Select the test suite to run.'
-        )
-        choice(
-            name: 'TEST_GROUP',
-            choices: ['smoke', 'regression'],
-            description: 'Select which test group to run.'
-        )
-        choice(
-            name: 'PARALLEL_MODE',
-            choices: ['methods', 'classes', 'tests'],
-            description: 'Parallel execution mode for tests.'
-        )
-        choice(
-            name: 'THREAD_COUNT',
-            choices: [5, 1, 2, 3, 4],
-            description: 'Number of threads to run tests concurrently.'
-        )
-        choice(
-            name: 'MAX_RETRY',
-            choices: [2, 0, 1, 3],
-            description: 'Maximum number of retries for failed tests.'
-        )
-        choice(
-            name: 'RETRY_STRATEGY',
-            choices: ['immediate', 'post-suite'],
-            description: 'Retry strategy for failed tests.'
-        )
-        string(
-            name: 'EMAIL_RECIPIENTS',
-            defaultValue: 'yletheqatest.io@gmail.com',
-            description: 'Comma-separated list of emails to notify after build.'
-        )
+        string(name: 'GIT_BRANCH',
+                defaultValue: 'develop',
+                description: 'Enter the git branch to build.')
+        choice(name: 'BROWSER',
+                choices: ['chrome', 'firefox'],
+                description: 'Specify the browser to run the tests.')
+        string(name: 'DEFAULT_TIMEOUT',
+                defaultValue: '20000',
+                description: 'Set the default time out for tests (in milliseconds).')
+        choice(name: 'PAGE_LOAD_STRATEGY',
+                choices: ['eager', 'none', 'normal'],
+                description: 'Set the page load strategy for the driver.')
+        choice(name: 'ENVIRONMENT',
+                choices: ['https://www.agoda.com', 'https://www.vietjetair.com/en', 'https://www.vietjetair.com/ko', 'https://www.vietjetair.com/vi'],
+                description: 'Specify an environment to run tests.')
+        choice(name: 'SUITE_NAME',
+                choices: ['AgodaRegression', 'VJRegression'],
+                description: 'Select the test suite to run.')
+        choice(name: 'TEST_GROUP',
+                choices: ['smoke', 'regression'],
+                description: 'Select which test group to run.')
+        choice(name: 'PARALLEL_MODE',
+                choices: ['methods', 'classes', 'tests'],
+                description: 'Parallel execution mode for tests.')
+        choice(name: 'THREAD_COUNT',
+                choices: [5, 1, 2, 3, 4],
+                description: 'Number of threads to run tests concurrently.')
+        choice(name: 'MAX_RETRY',
+                choices: [2, 0, 1, 3],
+                description: 'Maximum number of retries for failed tests.')
+        choice(name: 'RETRY_STRATEGY',
+                choices: ['immediate', 'post-suite'],
+                description: 'Retry strategy for failed tests.')
+        string(name: 'EMAIL_RECIPIENTS',
+                defaultValue: 'yletheqatest.io@gmail.com',
+                description: 'Comma-separated list of emails to notify after build.')
     }
-
     stages {
         stage('Initialize') {
             steps {
@@ -80,7 +57,6 @@ pipeline {
                 }
             }
         }
-
         stage('Checkout') {
             steps {
                 script {
@@ -89,7 +65,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build & Compile') {
             steps {
                 echo 'Compiling the project...'
@@ -99,7 +74,6 @@ pipeline {
                 """
             }
         }
-
         stage('Run Tests') {
             steps {
                 script {
@@ -111,16 +85,27 @@ pipeline {
                         def matcher = content =~ /<suite[^>]+started-at="([^"]+)"/
                         if (matcher.find()) {
                             previousStartTime = matcher.group(1)
-                            echo "Previous start time detected: ${previousStartTime}"
+                            echo "Previous testng-results.xml started-at detected: ${previousStartTime}"
                         }
                     }
-
+                    // also read the previous test-summary.txt generatedAt timestamp
+                    def previousRetryMetadataTime = null
+                    def retryMetadata = 'target/test-summary.txt'
+                    if (fileExists(retryMetadata)) {
+                        def retryContent = readFile(retryMetadata)
+                        def retryMatcher = retryContent =~ /generatedAt=(\d+)/
+                        if (retryMatcher.find()) {
+                            previousRetryMetadataTime = retryMatcher.group(1)
+                            echo "Previous test-summary.txt generatedAt: ${previousRetryMetadataTime}"
+                        }
+                    }
                     sh """
                         mvn -q test \
-                        -Dbrowser=${params.BROWSER} \
-                        -Dheadless=true \
-                        -Dtimeout=${params.DEFAULT_TIMEOUT} \
-                        -Denvironment=${params.ENVIRONMENT} \
+                        -Dselenide.browser=${params.BROWSER} \
+                        -Dselenide.headless=true \
+                        -Dselenide.timeout=${params.DEFAULT_TIMEOUT} \
+                        -Dselenide.pageLoadStrategy=${params.PAGE_LOAD_STRATEGY} \
+                        -Dselenide.baseUrl=${params.ENVIRONMENT} \
                         -Dsurefire.suiteXmlFiles=src/test/resources/suites/${params.SUITE_NAME}.xml \
                         -Dgroups=${params.TEST_GROUP} \
                         -Dparallel=${params.PARALLEL_MODE} \
@@ -128,7 +113,6 @@ pipeline {
                         -DmaxRetry=${params.MAX_RETRY} \
                         -DretryStrategy=${params.RETRY_STRATEGY}
                     """
-
                     // wait for a new testng-results.xml to be generated by comparing the updated <suite started-at="..."> timestamp
                     if (previousStartTime != null) {
                         timeout(time: 10, unit: 'SECONDS') {
@@ -141,62 +125,80 @@ pipeline {
                                 }
                                 return false
                             }
-                            echo "Detected updated testng-results.xml with new suite start time."
+                            echo "Detected updated testng-results.xml with new started-at timestamp."
+                        }
+                    }
+                    if (previousRetryMetadataTime != null) {
+                        timeout(time: 10, unit: 'SECONDS') {
+                            waitUntil {
+                                def refreshed = readFile(retryMetadata)
+                                def matcher = refreshed =~ /generatedAt=(\d+)/
+                                if (matcher.find()) {
+                                    def newTime = matcher.group(1)
+                                    return newTime != previousRetryMetadataTime
+                                }
+                                return false
+                            }
+                            echo "Detected updated test-summary.txt with new generatedAt timestamp."
                         }
                     }
                 }
             }
         }
     }
-
     post {
         always {
             allure includeProperties: false, jdk: '', results: [[path: 'allure-results']]
             script {
                 if (params.EMAIL_RECIPIENTS) {
-                    // obtain the test results from the testng-results.xml
+                    // obtain the test results from the testng-results.xml and test-summary.txt for email notification
+                    def failed = 0;
                     def passed = 0
-                    def failed = 0
-                    def skipped = 0
                     def retried = 0
-                    def ignored = 0
-                    def total = 0
+                    def skipped = 0
 
-                    if (fileExists('target/surefire-reports/testng-results.xml')) {
-                        def content = readFile('target/surefire-reports/testng-results.xml')
-                        def matcher = content =~ /<testng-results[^>]*ignored="(\d+)"[^>]*total="(\d+)"[^>]*passed="(\d+)"[^>]*failed="(\d+)"[^>]*skipped="(\d+)"/
-                        if (matcher.find()) {
-                            ignored = matcher.group(1).toInteger()
-                            total = matcher.group(2).toInteger()
-                            passed = matcher.group(3).toInteger()
-                            failed = matcher.group(4).toInteger()
-                            skipped = matcher.group(5).toInteger()
+                    // if retryStrategy=post-suite read the test-summary.txt to determine how many tests were retried
+                    if (fileExists('target/test-summary.txt')) {
+                        def props = readFile('target/test-summary.txt').readLines().collectEntries {
+                            def (k, v) = it.split('=')
+                            [(k): v]
                         }
+                        failed = props.get('failed', '0').toInteger()
+                        passed = props.get('passed', '0').toInteger()
+                        retried = props.get('retried', '0').toInteger()
+                        skipped = props.get('skipped', '0').toInteger()
+                    } else if (fileExists('target/surefire-reports/testng-results.xml')) {
+                        def content = readFile('target/surefire-reports/testng-results.xml')
+                        def matcher = content =~ /<testng-results[^>]*retried="(\d+)"[^>]*passed="(\d+)"[^>]*failed="(\d+)"[^>]*skipped="(\d+)"/
+                        if (matcher.find()) {
+                            retried = matcher.group(1).toInteger()
+                            passed = matcher.group(2).toInteger()
+                            failed = matcher.group(3).toInteger()
+                            skipped = matcher.group(4).toInteger()
+                        } else {
+                            matcher = content =~ /<testng-results[^>]*passed="(\d+)"[^>]*failed="(\d+)"[^>]*skipped="(\d+)"/
+                            if (matcher.find()) {
+                                passed = matcher.group(1).toInteger()
+                                failed = matcher.group(2).toInteger()
+                                skipped = matcher.group(3).toInteger()
+                            }
+                        }
+                    } else {
+                        echo "⚠️ No test results found in testng-results.xml or test-summary.txt."
+                        exit 1
                     }
-
-                    def isBuildSuccess = currentBuild.currentResult == 'SUCCESS'
-                    if (isBuildSuccess && failed != 0) {
-                        passed += failed
-                        retried = failed
-                        failed = 0
-                        total += retried
-                    }
-                    total = total - ignored
-
+                    def total = passed + failed + retried
                     // generate html report to attach to the email
                     sh """
                         allure generate --clean --single-file allure-results -o allure-report
                         mv allure-report/index.html allure-report/report.html
                     """
-
-                    emailext(
-                        subject: "Build Notifications - #${env.BUILD_NUMBER} - ${params.SUITE_NAME} - ${currentBuild.currentResult}",
-                        body: """
+                    emailext(subject: "Build Notifications - #${env.BUILD_NUMBER} - ${params.SUITE_NAME} - ${currentBuild.currentResult}",
+                            body: """
                         <html>
                         <head></head>
                         <body style="font-family: Arial, sans-serif;">
-                            <h3>🧪 <b style='color:${isBuildSuccess ? 'green' : 'red'};'>${currentBuild.currentResult}</b> Report Summary</h3>
-
+                            <h3>🧪 <b style="color:${currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red'}">${currentBuild.currentResult}</b> Report Summary</h3>
                             <ul>
                                 <li><b>Project:</b> Selenium3</li>
                                 <li><b>Branch:</b> ${params.GIT_BRANCH}</li>
@@ -237,10 +239,9 @@ pipeline {
                         </body>
                         </html>
                         """,
-                        mimeType: 'text/html',
-                        to: "${params.EMAIL_RECIPIENTS}",
-                        attachmentsPattern: 'allure-report/report.html',
-                    )
+                            mimeType: 'text/html',
+                            to: "${params.EMAIL_RECIPIENTS}",
+                            attachmentsPattern: 'allure-report/report.html',)
                 } else {
                     echo "No recipients specified. Skipping email notification."
                 }
