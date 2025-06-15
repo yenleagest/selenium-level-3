@@ -125,20 +125,20 @@ mvn clean test \
   -DmaxRetry=3 \
   -DretryStrategy=post-suite
   ```
-| Parameter                     | Description                                                                |
-|-------------------------------|----------------------------------------------------------------------------|
-| `-Dselenide.browser`          | Specifies the browser to use (`chrome`, `firefox`, `edge`, `safari`).      |
-| `-Dselenide.headless`         | Enables headless mode (`true` or `false`) for browser execution.           |
-| `-Dselenide.timeout`          | Sets the default timeout (in milliseconds) for element waits.              |
-| `-Dselenide.pageLoadStrategy`| Controls how the browser waits for page loading (`normal`, `eager`, `none`).|
-| `-Dselenide.remote`           | URL of the remote Selenium Grid server (only needed for remote execution). |
-| `-Dselenide.baseUrl`          | Base URL of the application under test.                                    |
-| `-Dsurefire.suiteXmlFiles`    | Path to the TestNG XML suite file to execute.                              |
-| `-Dgroups`                    | Specifies which test group(s) to run (e.g., `smoke`, `regression`).        |
-| `-Dparallel`                  | Specifies parallel execution mode (`classes`, `methods`, or `tests`).      |
-| `-DthreadCount`               | Number of threads to use when running tests in parallel.                   |
-| `-DmaxRetry`                  | Maximum number of retry attempts for failed tests.                         |
-| `-DretryStrategy`             | Retry strategy to apply (`immediate` or `post-suite`).                     |
+| Parameter                     | Description                                                                   |
+|-------------------------------|-------------------------------------------------------------------------------|
+| `-Dselenide.browser`          | Specifies the browser to use (`chrome`, `firefox`, `edge`, `safari`).         |
+| `-Dselenide.headless`         | Enables headless mode (`true` or `false`) for browser execution.              |
+| `-Dselenide.timeout`          | Sets the default timeout (in milliseconds) for element waits.                 |
+| `-Dselenide.pageLoadStrategy` | Controls how the browser waits for page loading (`normal`, `eager`, `none`).  |
+| `-Dselenide.remote`           | URL of the remote Selenium Grid server (only needed for remote execution).    |
+| `-Dselenide.baseUrl`          | Base URL of the application under test.                                       |
+| `-Dsurefire.suiteXmlFiles`    | Path to the TestNG XML suite file to execute.                                 |
+| `-Dgroups`                    | Specifies which test group(s) to run (e.g., `smoke`, `regression`).           |
+| `-Dparallel`                  | Specifies parallel execution mode (`classes`, `methods`, or `tests`).         |
+| `-DthreadCount`               | Number of threads to use when running tests in parallel.                      |
+| `-DmaxRetry`                  | Maximum number of retry attempts for failed tests.                            |
+| `-DretryStrategy`             | Retry strategy to apply (`immediate` or `post-suite`).                        |
 
 ## 🎈 View Allure Report
 ```sh   

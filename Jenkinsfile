@@ -157,7 +157,6 @@ pipeline {
                     def retried = 0
                     def skipped = 0
 
-                    // if retryStrategy=post-suite read the test-summary.txt to determine how many tests were retried
                     if (fileExists('target/test-summary.txt')) {
                         def props = readFile('target/test-summary.txt').readLines().collectEntries {
                             def (k, v) = it.split('=')

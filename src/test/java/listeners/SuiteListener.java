@@ -26,8 +26,9 @@ import static common.Constants.RETRY_STRATEGY;
 @Slf4j
 public class SuiteListener implements ISuiteListener {
 
-    private boolean firstRunCaptured = false;
     private int retryCount = 0;
+    // these variables below are used to capture the test summary for Jenkins email reports
+    private boolean firstRunCaptured = false;
     private int totalRetried = 0;
     private int totalPassed = 0;
 
