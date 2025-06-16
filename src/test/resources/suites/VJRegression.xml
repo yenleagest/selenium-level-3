@@ -5,11 +5,6 @@
         <listener class-name="listeners.SuiteListener"/>
     </listeners>
     <test name="VJRegression">
-        <groups>
-            <run>
-                <include name="regression"/>
-            </run>
-        </groups>
         <classes>
         </classes>
     </test>

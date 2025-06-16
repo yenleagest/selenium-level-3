@@ -109,6 +109,10 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M7</version>
                 <configuration>
+                    <testFailureIgnore>true
+                    </testFailureIgnore> <!-- Ignore all failures so they don't affect the final result before retry -->
+                    <useFile>false
+                    </useFile> <!-- Output logs directly to console (do not write to surefire log files) -->
                     <argLine>
                         -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
                     </argLine>

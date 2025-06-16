@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum Environment {
     AGODA("https://www.agoda.com/"),
-    VJ("https://www.vietjetair.com/"),
+    VJ_VI("https://www.vietjetair.com/vi/"),
+    VJ_EN("https://www.vietjetair.com/en/"),
+    VJ_KO("https://www.vietjetair.com/ko/"),
     ;
 
     private final String baseUrl;

@@ -12,6 +12,8 @@ import org.testng.xml.XmlInclude;
 import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlTest;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,37 +27,50 @@ import static common.Constants.RETRY_STRATEGY;
 public class SuiteListener implements ISuiteListener {
 
     private int retryCount = 0;
+    // these variables below are used to capture the test summary for Jenkins email reports
+    private boolean firstRunCaptured = false;
+    private int totalRetried = 0;
+    private int totalPassed = 0;
 
     @Override
     public void onFinish(ISuite suite) {
 
-        if (!RETRY_STRATEGY.equalsIgnoreCase("post-suite")) {
+        if (!RETRY_STRATEGY.equalsIgnoreCase("post-suite") || MAX_RETRY == 0) {
             return;
         }
 
         boolean isSuiteSuccess = suite.getResults().values().stream()
                 .allMatch(result -> result.getTestContext().getFailedTests().getAllResults().isEmpty());
 
-        if (isSuiteSuccess) {
-            return;
+        // get suite result and context
+        ISuiteResult result = suite.getResults().values().iterator().next();
+        ITestContext context = result.getTestContext();
+
+        // on the first run, capture the number of passed tests and mark it
+        // for each subsequent retry, increase the totalPassed by newly passed tests
+        if (!firstRunCaptured) {
+            totalPassed = context.getPassedTests().size();
+            firstRunCaptured = true;
+        } else {
+            totalPassed += context.getPassedTests().size();
         }
 
         retryCount++;
 
-        if (retryCount > MAX_RETRY) {
+        if (isSuiteSuccess || retryCount > MAX_RETRY) {
+            captureTestSummary(suite);
             return;
         }
 
-        // get suite result and context
-        ISuiteResult result = suite.getResults().values().iterator().next();
-        ITestContext context = result.getTestContext();
+        // increase total retries by number of failed tests
+        totalRetried += context.getFailedTests().size();
 
         // create a new retry suite with the same name for consistent reporting
         XmlSuite retrySuite = new XmlSuite();
         retrySuite.setName(suite.getName());
 
         XmlTest xmlTest = new XmlTest(retrySuite);
-        xmlTest.setName(suite.getName());
+        xmlTest.setName("[Retry] %s".formatted(suite.getName()));
 
         List<XmlClass> retryClasses = new ArrayList<>();
 
@@ -93,5 +108,22 @@ public class SuiteListener implements ISuiteListener {
         log.info("Running failed tests / {} / Attempt [{}/{}]", suite.getName(), retryCount, MAX_RETRY);
 
         testng.run();
+    }
+
+    private void captureTestSummary(ISuite suite) {
+        ITestContext context = suite.getResults().values().iterator().next().getTestContext();
+
+        int failed = context.getFailedTests().size();
+        int skipped = context.getSkippedTests().size();
+
+        try (PrintWriter out = new PrintWriter("target/test-summary.txt")) {
+            out.println("generatedAt=" + System.currentTimeMillis());
+            out.println("failed=" + failed);
+            out.println("skipped=" + skipped);
+            out.println("passed=" + totalPassed);
+            out.println("retried=" + totalRetried);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
