@@ -102,6 +102,7 @@ pipeline {
                     sh """
                         mvn -q test \
                         -Dselenide.browser=${params.BROWSER} \
+                        -Dselenide.browserSize=1920x1080 \
                         -Dselenide.headless=true \
                         -Dselenide.timeout=${params.DEFAULT_TIMEOUT} \
                         -Dselenide.pageLoadStrategy=${params.PAGE_LOAD_STRATEGY} \
