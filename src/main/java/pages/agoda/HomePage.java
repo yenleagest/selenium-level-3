@@ -1,0 +1,149 @@
+package pages.agoda;
+
+import actions.HomePageActions;
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.SelenideElement;
+import data.models.Occupancy;
+import drivers.DriverUtils;
+import io.qameta.allure.Step;
+import lombok.AllArgsConstructor;
+import org.openqa.selenium.By;
+
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+
+import static com.codeborne.selenide.Selenide.$;
+
+public class HomePage {
+
+    private final HomePageActions homePageActions = new HomePageActions(this);
+    private final By searchBox = By.id("textInput");
+    private final By occContainer = By.className("OccupancySelector");
+    private final By searchBtn = By.cssSelector("[data-selenium='searchButton']");
+    private final By closeDownloadAppBtn = By.cssSelector("[leadingicon='fill.symbol.close']");
+
+    // dynamic locators
+    private final String searchSuggestion = "[data-text='%s']";
+    private final String selectedDate = "[data-selenium-date='%s']";
+
+
+    private int getRoomCount() {
+        return parseValueFromElement(OccupancyType.ROOMS.valueSelector());
+    }
+
+    private int getAdultCount() {
+        return parseValueFromElement(OccupancyType.ADULTS.valueSelector());
+    }
+
+    private int getChildCount() {
+        return parseValueFromElement(OccupancyType.CHILDREN.valueSelector());
+    }
+
+    private int parseValueFromElement(String selector) {
+        return Integer.parseInt($(selector).getText().trim());
+    }
+
+    // define an enum to manage occupancy's locators
+    @AllArgsConstructor
+    public enum OccupancyType {
+
+        ROOMS("occupancyRooms"),
+        ADULTS("occupancyAdults"),
+        CHILDREN("occupancyChildren");
+
+        private final String seleniumKey;
+
+        public String controlSelector() {
+            return "[data-selenium='%s']".formatted(seleniumKey);
+        }
+
+        public String plusButton() {
+            return controlSelector().concat(" [data-selenium='plus']");
+        }
+
+        public String minusButton() {
+            return controlSelector().concat(" [data-selenium='minus']");
+        }
+
+        public String valueSelector() {
+            return controlSelector().concat(" [data-component*='desktop-occ']");
+        }
+    }
+
+    @Step("Search a hotel with given information: {location}, {duration} days from next {targetDay}, occupancy: {occupancy}")
+    public void searchHotel(String location, DayOfWeek targetDay, int duration, Occupancy occupancy) {
+        searchForLocation(location);
+        selectDate(targetDay, duration);
+        homePageActions.setOccupancyTo(occupancy);
+        clickSearchButton();
+    }
+
+    @Step("Click on occupancy container")
+    public void selectOccupancyContainer() {
+        $(occContainer).click();
+    }
+
+    @Step("Get current occupancy")
+    public Occupancy getCurrentOccupancy() {
+        return new Occupancy(getRoomCount(), getAdultCount(), getChildCount());
+    }
+
+    @Step("Increase {occType} by 1")
+    public void increaseOcc(OccupancyType occType) {
+        $(occType.plusButton()).click();
+    }
+
+    @Step("Decrease {occType} by 1")
+    public void decreaseOcc(OccupancyType occType) {
+        $(occType.minusButton()).click();
+    }
+
+    @Step("Search for location: {location}")
+    private void searchForLocation(String location) {
+        closeAppDownloadAds();
+        inputValueToSearchBox(location);
+        selectFirstSuggestion(location);
+    }
+
+    @Step("Select check-in and check-out date: {duration} days from next {targetDay}")
+    private void selectDate(DayOfWeek targetDay, int duration) {
+        LocalDate checkinDate = LocalDate.now().with(TemporalAdjusters.next(targetDay));
+        LocalDate checkoutDate = checkinDate.plusDays(duration);
+        selectDate(checkinDate);
+        selectDate(checkoutDate);
+    }
+
+    @Step("Click search button")
+    private void clickSearchButton() {
+        $(searchBtn).click();
+        DriverUtils.switchToLatestTab();
+    }
+
+    @Step("Input value to search box: {value}")
+    private void inputValueToSearchBox(String value) {
+        SelenideElement e = $(searchBox).shouldBe(Condition.visible);
+        e.click();
+        e.setValue(value);
+
+    }
+
+    @Step("Select first suggestion for location: {location}")
+    private void selectFirstSuggestion(String location) {
+        SelenideElement suggestion = $(searchSuggestion.formatted(location));
+        suggestion.click();
+    }
+
+    @Step("Select date: {date}")
+    private void selectDate(LocalDate date) {
+        SelenideElement selectedDate = $(this.selectedDate.formatted(date));
+        selectedDate.click();
+    }
+
+    @Step("Close app download ads if displayed")
+    private void closeAppDownloadAds() {
+        if ($(closeDownloadAppBtn).isDisplayed()) {
+            $(closeDownloadAppBtn).click();
+        }
+    }
+}

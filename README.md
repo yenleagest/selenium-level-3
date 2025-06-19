@@ -113,6 +113,7 @@ mvn clean install -DskipTests
 ```sh
 mvn clean test \
   -Dselenide.browser=chrome \
+  -Dselenide.browserSize=1920x1080 \
   -Dselenide.headless=true \
   -Dselenide.timeout=20000 \
   -Dselenide.pageLoadStrategy=eager \
@@ -128,6 +129,7 @@ mvn clean test \
 | Parameter                     | Description                                                                   |
 |-------------------------------|-------------------------------------------------------------------------------|
 | `-Dselenide.browser`          | Specifies the browser to use (`chrome`, `firefox`, `edge`, `safari`).         |
+| `-Dselenide.browserSize`      | Sets the browser window size (e.g., `1920x1080`).                             |
 | `-Dselenide.headless`         | Enables headless mode (`true` or `false`) for browser execution.              |
 | `-Dselenide.timeout`          | Sets the default timeout (in milliseconds) for element waits.                 |
 | `-Dselenide.pageLoadStrategy` | Controls how the browser waits for page loading (`normal`, `eager`, `none`).  |

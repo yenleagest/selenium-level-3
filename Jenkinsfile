@@ -11,10 +11,10 @@ pipeline {
     // define jenkins parameters
     parameters {
         string(name: 'GIT_BRANCH',
-                defaultValue: 'develop',
+                defaultValue: 'backup',
                 description: 'Enter the git branch to build.')
         choice(name: 'BROWSER',
-                choices: ['chrome', 'firefox'],
+                choices: ['firefox', 'chrome'],
                 description: 'Specify the browser to run the tests.')
         string(name: 'DEFAULT_TIMEOUT',
                 defaultValue: '20000',
@@ -38,13 +38,13 @@ pipeline {
                 choices: [5, 1, 2, 3, 4],
                 description: 'Number of threads to run tests concurrently.')
         choice(name: 'MAX_RETRY',
-                choices: [2, 0, 1, 3],
+                choices: [1, 0, 2, 3],
                 description: 'Maximum number of retries for failed tests.')
         choice(name: 'RETRY_STRATEGY',
                 choices: ['immediate', 'post-suite'],
                 description: 'Retry strategy for failed tests.')
         string(name: 'EMAIL_RECIPIENTS',
-                defaultValue: 'yletheqatest.io@gmail.com',
+                defaultValue: 'yletheqatest.io@gmail.com,thuong.dang@agest.vn',
                 description: 'Comma-separated list of emails to notify after build.')
     }
     stages {
@@ -102,6 +102,7 @@ pipeline {
                     sh """
                         mvn -q test \
                         -Dselenide.browser=${params.BROWSER} \
+                        -Dselenide.browserSize=1920x1080 \
                         -Dselenide.headless=true \
                         -Dselenide.timeout=${params.DEFAULT_TIMEOUT} \
                         -Dselenide.pageLoadStrategy=${params.PAGE_LOAD_STRATEGY} \
