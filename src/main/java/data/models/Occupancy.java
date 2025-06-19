@@ -2,14 +2,14 @@ package data.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.With;
+import lombok.NoArgsConstructor;
 
 @Data
-@With
 @AllArgsConstructor
+@NoArgsConstructor
 public class Occupancy {
 
-    private final int rooms;
-    private final int adults;
-    private final int children;
+    private int rooms;
+    private int adults;
+    private int children;
 }

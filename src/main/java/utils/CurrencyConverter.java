@@ -7,10 +7,14 @@ import lombok.extern.slf4j.Slf4j;
 public class CurrencyConverter {
 
     public static int convert(int amount, String symbol) {
-        int conversionRate = Currency.getRateByCurrencySymbol(symbol);
-        int convertedAmt = amount / conversionRate;
-        log.info("Converted amount: %d %s".formatted(convertedAmt, symbol));
-        return convertedAmt;
+        if (symbol.equals("₫")) {
+            return amount; // VND is the base currency, no conversion needed
+        } else {
+            int conversionRate = Currency.getRateByCurrencySymbol(symbol);
+            int convertedAmt = amount / conversionRate;
+            log.info("Converted amount: %d %s".formatted(convertedAmt, symbol));
+            return convertedAmt;
+        }
     }
 
     // when running on Jenkins, agoda will display the server currency
@@ -24,13 +28,9 @@ public class CurrencyConverter {
         private final int conversionRate;
 
         public static int getRateByCurrencySymbol(String symbol) {
-            if (symbol.equals("₫")) {
-                return 1; // VND is the base currency, no conversion needed
-            } else {
-                for (Currency currency : Currency.values()) {
-                    if (currency.currencySymbol.equals(symbol)) {
-                        return currency.conversionRate;
-                    }
+            for (Currency currency : Currency.values()) {
+                if (currency.currencySymbol.equals(symbol)) {
+                    return currency.conversionRate;
                 }
             }
 

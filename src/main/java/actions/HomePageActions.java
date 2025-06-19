@@ -31,11 +31,11 @@ public class HomePageActions {
     private void adjustUntilEqual(OccupancyType type, int current, int target) {
         if (current < target) {
             for (int i = current; i < target; i++) {
-                homePage.adjustOccupancy(type, true);
+                homePage.increaseOcc(type);
             }
         } else if (current > target) {
             for (int i = current; i > target; i--) {
-                homePage.adjustOccupancy(type, false);
+                homePage.decreaseOcc(type);
             }
         }
     }

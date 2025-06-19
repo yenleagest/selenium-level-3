@@ -3,27 +3,23 @@ package testcases;
 import drivers.DriverUtils;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
+import utils.YmlParser;
 
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-
-import static utils.YmlParser.getTestData;
 
 
 public class TestBase {
 
     @DataProvider(name = "dataByMethod")
-    public Object[][] getTestDataFromYaml(Method method) {
+    public Object[][] getAgodaTestData(Method method) {
         try {
-            String testCaseName = method.getName();
-            List<Map<String, String>> dataList = getTestData(testCaseName);
-            Object[][] data = new Object[dataList.size()][1];
-            for (int i = 0; i < dataList.size(); i++) {
-                data[i][0] = dataList.get(i);
+            Object[][] data = YmlParser.getAgodaTestData(method.getName());
+            if (data.length == 0) {
+                throw new IllegalStateException("No test data found for method: " + method.getName());
             }
             return data;
         } catch (Exception e) {
+            System.err.println("Exception loading data for " + method.getName() + ": " + e.getMessage());
             throw new IllegalStateException("Failed to load test data for method: " + method.getName(), e);
         }
     }

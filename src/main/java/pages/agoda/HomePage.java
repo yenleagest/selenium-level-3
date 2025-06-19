@@ -1,31 +1,53 @@
 package pages.agoda;
 
 import actions.HomePageActions;
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.SelenideElement;
 import data.models.Occupancy;
 import drivers.DriverUtils;
-import elements.Element;
 import io.qameta.allure.Step;
 import lombok.AllArgsConstructor;
 import org.openqa.selenium.By;
-import utils.DateUtils;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+
+import static com.codeborne.selenide.Selenide.$;
 
 public class HomePage {
 
     private final HomePageActions homePageActions = new HomePageActions(this);
-    private final Element searchBox = new Element(By.id("textInput"));
-    private final Element occupancyContainer = new Element(By.className("OccupancySelector"));
-    private final Element searchBtn = new Element("[data-selenium='searchButton']");
-    private final Element closeDownloadAppBtn = new Element("[leadingicon='fill.symbol.close']");
+    private final By searchBox = By.id("textInput");
+    private final By occContainer = By.className("OccupancySelector");
+    private final By searchBtn = By.cssSelector("[data-selenium='searchButton']");
+    private final By closeDownloadAppBtn = By.cssSelector("[leadingicon='fill.symbol.close']");
 
     // dynamic locators
     private final String searchSuggestion = "[data-text='%s']";
     private final String selectedDate = "[data-selenium-date='%s']";
 
+
+    private int getRoomCount() {
+        return parseValueFromElement(OccupancyType.ROOMS.valueSelector());
+    }
+
+    private int getAdultCount() {
+        return parseValueFromElement(OccupancyType.ADULTS.valueSelector());
+    }
+
+    private int getChildCount() {
+        return parseValueFromElement(OccupancyType.CHILDREN.valueSelector());
+    }
+
+    private int parseValueFromElement(String selector) {
+        return Integer.parseInt($(selector).getText().trim());
+    }
+
     // define an enum to manage occupancy's locators
     @AllArgsConstructor
     public enum OccupancyType {
+
         ROOMS("occupancyRooms"),
         ADULTS("occupancyAdults"),
         CHILDREN("occupancyChildren");
@@ -49,32 +71,32 @@ public class HomePage {
         }
     }
 
-    @Step("Search a hotel with given information: {location}, {duration} days from {offset} {weekday}, occupancy: {occupancy}")
-    public void searchHotel(String location, DateUtils.WeekOffset offset, DateUtils.Weekday weekday, int duration, Occupancy occupancy) {
+    @Step("Search a hotel with given information: {location}, {duration} days from next {targetDay}, occupancy: {occupancy}")
+    public void searchHotel(String location, DayOfWeek targetDay, int duration, Occupancy occupancy) {
         searchForLocation(location);
-        selectDate(offset, weekday, duration);
+        selectDate(targetDay, duration);
         homePageActions.setOccupancyTo(occupancy);
         clickSearchButton();
     }
 
     @Step("Click on occupancy container")
     public void selectOccupancyContainer() {
-        occupancyContainer.click();
+        $(occContainer).click();
     }
 
     @Step("Get current occupancy")
     public Occupancy getCurrentOccupancy() {
-        int rooms = Integer.parseInt(new Element(OccupancyType.ROOMS.valueSelector()).getRaw().getText().trim());
-        int adults = Integer.parseInt(new Element(OccupancyType.ADULTS.valueSelector()).getRaw().getText().trim());
-        int children = Integer.parseInt(new Element(OccupancyType.CHILDREN.valueSelector()).getRaw().getText().trim());
-        return new Occupancy(rooms, adults, children);
+        return new Occupancy(getRoomCount(), getAdultCount(), getChildCount());
     }
 
-    @Step("Perform adjustment for occupancy: {occType}, increase: {increase}")
-    public void adjustOccupancy(OccupancyType occType, boolean increase) {
-        Element plusBtn = new Element(occType.plusButton());
-        Element minusBtn = new Element(occType.minusButton());
-        (increase ? plusBtn : minusBtn).click();
+    @Step("Increase {occType} by 1")
+    public void increaseOcc(OccupancyType occType) {
+        $(occType.plusButton()).click();
+    }
+
+    @Step("Decrease {occType} by 1")
+    public void decreaseOcc(OccupancyType occType) {
+        $(occType.minusButton()).click();
     }
 
     @Step("Search for location: {location}")
@@ -84,42 +106,44 @@ public class HomePage {
         selectFirstSuggestion(location);
     }
 
-    @Step("Select check-in and check-out date: {duration} days from {offset} {weekday}")
-    private void selectDate(DateUtils.WeekOffset offset, DateUtils.Weekday weekday, int duration) {
-        LocalDate checkinDate = DateUtils.getLocalDate(offset, weekday);
+    @Step("Select check-in and check-out date: {duration} days from next {targetDay}")
+    private void selectDate(DayOfWeek targetDay, int duration) {
+        LocalDate checkinDate = LocalDate.now().with(TemporalAdjusters.next(targetDay));
         LocalDate checkoutDate = checkinDate.plusDays(duration);
-        selectDate(checkinDate.toString());
-        selectDate(checkoutDate.toString());
+        selectDate(checkinDate);
+        selectDate(checkoutDate);
     }
 
     @Step("Click search button")
     private void clickSearchButton() {
-        searchBtn.click();
+        $(searchBtn).click();
         DriverUtils.switchToLatestTab();
     }
 
     @Step("Input value to search box: {value}")
     private void inputValueToSearchBox(String value) {
-        searchBox.click();
-        searchBox.setValue(value);
+        SelenideElement e = $(searchBox).shouldBe(Condition.visible);
+        e.click();
+        e.setValue(value);
+
     }
 
     @Step("Select first suggestion for location: {location}")
     private void selectFirstSuggestion(String location) {
-        Element suggestion = new Element(searchSuggestion.formatted(location));
+        SelenideElement suggestion = $(searchSuggestion.formatted(location));
         suggestion.click();
     }
 
     @Step("Select date: {date}")
-    private void selectDate(String date) {
-        Element selectedDate = new Element(this.selectedDate.formatted(date));
+    private void selectDate(LocalDate date) {
+        SelenideElement selectedDate = $(this.selectedDate.formatted(date));
         selectedDate.click();
     }
 
     @Step("Close app download ads if displayed")
     private void closeAppDownloadAds() {
-        if (closeDownloadAppBtn.getRaw().isDisplayed()) {
-            closeDownloadAppBtn.click();
+        if ($(closeDownloadAppBtn).isDisplayed()) {
+            $(closeDownloadAppBtn).click();
         }
     }
 }

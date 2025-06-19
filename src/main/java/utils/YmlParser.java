@@ -1,30 +1,29 @@
 package utils;
 
+import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import testdata.AgodaTestData;
 
 import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
 
 import static common.Constants.RESOURCE_DATA_PATH;
 
+@Slf4j
 public class YmlParser {
 
-    public static List<Map<String, String>> getTestData(String testCaseName) throws IOException {
-        InputStream input = new FileInputStream(RESOURCE_DATA_PATH + "data.yml");
-        LoaderOptions options = new LoaderOptions();
-        Constructor constructor = new Constructor(Map.class, options);
-        Yaml yaml = new Yaml(constructor);
-        Map<String, List<Map<String, String>>> data = yaml.load(input);
+    public static Object[][] getAgodaTestData(String testCaseName) throws FileNotFoundException {
+        String path = RESOURCE_DATA_PATH + "agoda/" + testCaseName + ".yml";
+        InputStream inputStream = new FileInputStream(path);
 
-        if (!data.containsKey(testCaseName)) {
-            throw new RuntimeException("Test case not found: " + testCaseName);
-        }
-        return data.get(testCaseName);
+        Yaml yaml = new Yaml(new Constructor(AgodaTestData.class, new LoaderOptions()));
+        Iterable<Object> loaded = yaml.loadAll(inputStream);
+
+        return java.util.stream.StreamSupport.stream(loaded.spliterator(), false)
+                .map(data -> new Object[]{data})
+                .toArray(Object[][]::new);
     }
 }
-

@@ -12,11 +12,8 @@ import org.testng.asserts.SoftAssert;
 import pages.agoda.HomePage;
 import pages.agoda.SearchResultsPage;
 import testcases.TestBase;
-import utils.CollectionUtils;
-import utils.DateUtils.WeekOffset;
-import utils.DateUtils.Weekday;
+import testdata.AgodaTestData;
 
-import java.util.HashMap;
 import java.util.List;
 
 @Slf4j
@@ -30,6 +27,7 @@ public class SearchAndSortHotelTest extends TestBase {
     String location;
     int resultCount;
     List<CardContainer> hotels;
+    List<CardContainer> filteredHotels;
     List<Integer> prices;
     List<Integer> sortedPrices;
     List<String> destinations;
@@ -45,45 +43,32 @@ public class SearchAndSortHotelTest extends TestBase {
     }
 
     @Test(dataProvider = "dataByMethod", groups = {"smoke", "regression"}, description = "Search and sort hotel successfully")
-    public void searchAndSortHotel(HashMap<String, String> data) {
-        occupancy = new Occupancy(
-                Integer.parseInt(data.get("rooms")),
-                Integer.parseInt(data.get("adults")),
-                Integer.parseInt(data.get("children")));
-        location = data.get("location");
-        resultCount = Integer.parseInt(data.get("resultCount"));
+    public void searchAndSortHotel(AgodaTestData data) {
+        location = data.getLocation();
+        resultCount = data.getResultCount();
 
         /* Search the hotel with the following information:
             - Place: Da Nang
             - Date: 3 days from next Friday
             - Number of people: Family Travelers -> 2 rooms and 4 adults
         */
-        homePage.searchHotel(
-                location,
-                WeekOffset.fromString(data.get("weekOffset")),
-                Weekday.fromString(data.get("weekday")),
-                Integer.parseInt(data.get("duration")),
-                occupancy);
+        homePage.searchHotel(location,
+                data.getWeekday(),
+                data.getDuration(),
+                data.getOccupancy());
 
         // Search result is displayed correctly with first 5 hotels(destination).
         hotels = searchResultsPage.getHotels(resultCount);
-        destinations = CollectionUtils.getDestinations(hotels);
-        filteredDestinations = CollectionUtils.filterByKeyword(destinations, location);
-        softAssert.assertEquals(destinations, filteredDestinations, "Not all results contain '%s': %s".formatted(location, destinations));
+        filteredHotels = CardContainer.filteredHotels(hotels, location, false, 0);
+        softAssert.assertEquals(hotels, filteredHotels, "Not all results contain '%s': %s".formatted(location, hotels));
 
         // Sort hotels by lowest prices.
-        searchResultsPage.sortResultsBy(SortBy.fromString(data.get("sortBy")));
+        searchResultsPage.sortResultsBy(SortBy.fromString(data.getSortBy()));
 
-        // 5 first hotels are sorted with the right order.
+        // 5 first hotels are sorted with the right order and the hotel destination is still correct.
         hotels = searchResultsPage.getHotels(resultCount);
-        prices = CollectionUtils.getPrices(hotels);
-        sortedPrices = CollectionUtils.sortAscending(prices);
-        softAssert.assertEquals(prices, sortedPrices, "Results are not sorted by lowest price first: %s".formatted(prices));
-
-        // The hotel destination is still correct.
-        destinations = CollectionUtils.getDestinations(hotels);
-        filteredDestinations = CollectionUtils.filterByKeyword(destinations, location);
-        softAssert.assertEquals(destinations, filteredDestinations, "Not all results contain '%s': %s".formatted(location, destinations));
+        filteredHotels = CardContainer.filteredHotels(hotels, location, true, 0);
+        softAssert.assertEquals(hotels, filteredHotels, "Either results are not sorted by lowest price or not all results contain '%s' : %s".formatted(location, hotels));
 
         softAssert.assertAll();
     }
