@@ -45,7 +45,7 @@ public class SearchAndFilterHotelTest extends TestBase {
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() {
-        DriverUtils.openURL();
+        DriverUtils.openURL(); // Navigate to https://www.agoda.com/
         softAssert = new SoftAssert();
         homePage = new HomePage();
         homePageActions = new HomePageActions(homePage);
@@ -54,7 +54,6 @@ public class SearchAndFilterHotelTest extends TestBase {
 
     @Test(dataProvider = "dataByMethod", groups = {"smoke", "regression"}, description = "Search and filter hotel successfully")
     public void searchAndFilterHotel(HashMap<String, String> data) {
-        // remove cast
         occupancy = new Occupancy(Integer.parseInt(data.get("rooms")), Integer.parseInt(data.get("adults")), Integer.parseInt(data.get("children")));
         location = data.get("location");
         resultCount = Integer.parseInt(data.get("resultCount"));

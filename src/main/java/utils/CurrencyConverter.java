@@ -24,12 +24,18 @@ public class CurrencyConverter {
         private final int conversionRate;
 
         public static int getRateByCurrencySymbol(String symbol) {
-            for (Currency currency : Currency.values()) {
-                if (currency.currencySymbol.equals(symbol)) {
-                    return currency.conversionRate;
+            if (symbol.equals("₫")) {
+                return 1; // VND is the base currency, no conversion needed
+            } else {
+                for (Currency currency : Currency.values()) {
+                    if (currency.currencySymbol.equals(symbol)) {
+                        return currency.conversionRate;
+                    }
                 }
             }
-            return 1; // default rate if not matched
+
+            log.warn("Unrecognized currency symbol: {}", symbol);
+            throw new IllegalArgumentException("Unsupported currency symbol: " + symbol);
         }
     }
 }
