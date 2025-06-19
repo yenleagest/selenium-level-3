@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum SortBy {
+
     LOWEST_PRICE_FIRST("search-sort-price"),
     DISTANCE("search-sort-distance-landmark"),
     TOP_REVIEWED("search-sort-guest-rating"),

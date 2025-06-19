@@ -96,7 +96,7 @@ public class SearchResultsPage extends HomePage {
     }
 
     private String extractDestination(SelenideElement container) {
-        String dest = container.$(destination).getText().trim();
+        String dest = container.$(destination).shouldBe(visible).getText().trim();
         if (dest.isEmpty()) {
             throw new IllegalStateException("Destination is missing or empty for a hotel card.");
         }
@@ -104,7 +104,7 @@ public class SearchResultsPage extends HomePage {
     }
 
     private int extractPrice(SelenideElement container) {
-        String priceText = container.$(finalPrice).getText().replaceAll("\\D", "");
+        String priceText = container.$(finalPrice).shouldBe(visible).getText().replaceAll("\\D", "");
         if (priceText.isEmpty()) {
             throw new IllegalStateException("Price is missing or empty for a hotel card.");
         }
@@ -112,7 +112,7 @@ public class SearchResultsPage extends HomePage {
     }
 
     private int extractRating(SelenideElement container) {
-        String text = container.$(starContainer).getText().split(" ")[0];
+        String text = container.$(starContainer).shouldBe(visible).getText().split(" ")[0];
         return (int) Math.floor(Double.parseDouble(text));
     }
 

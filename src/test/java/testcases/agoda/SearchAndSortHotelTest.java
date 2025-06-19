@@ -1,7 +1,6 @@
 package testcases.agoda;
 
 import actions.HomePageActions;
-import data.enums.SortBy;
 import data.models.CardContainer;
 import data.models.Occupancy;
 import drivers.DriverUtils;
@@ -63,7 +62,7 @@ public class SearchAndSortHotelTest extends TestBase {
         softAssert.assertEquals(hotels, filteredHotels, "Not all results contain '%s': %s".formatted(location, hotels));
 
         // Sort hotels by lowest prices.
-        searchResultsPage.sortResultsBy(SortBy.fromString(data.getSortBy()));
+        searchResultsPage.sortResultsBy(data.getSortBy());
 
         // 5 first hotels are sorted with the right order and the hotel destination is still correct.
         hotels = searchResultsPage.getHotels(resultCount);

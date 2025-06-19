@@ -6,4 +6,4 @@ occupancy:
   rooms: 2
   adults: 4
   children: 0
-sortBy: lowest price first
+sortBy: LOWEST_PRICE_FIRST

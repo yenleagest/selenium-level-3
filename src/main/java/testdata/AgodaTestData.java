@@ -1,5 +1,6 @@
 package testdata;
 
+import data.enums.SortBy;
 import data.models.Occupancy;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,5 +21,5 @@ public class AgodaTestData {
     private Integer minPrice;
     private Integer maxPrice;
     private Integer rating;
-    private String sortBy;
+    private SortBy sortBy;
 }
