@@ -193,7 +193,6 @@ pipeline {
                         allure generate --clean --single-file allure-results -o allure-report
                         zip allure-report.zip allure-report/index.html || true
                     """
-                    archiveArtifacts artifacts: 'allure-report/index.html', fingerprint: true
 
                     emailext(subject: "Build Notifications - #${env.BUILD_NUMBER} - ${params.SUITE_NAME} - ${currentBuild.currentResult}",
                             body: """
