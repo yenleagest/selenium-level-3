@@ -45,10 +45,10 @@ public class CardContainer {
 
         if (priceRange.length == 2)
             log.info("Filtering hotels with destination: {}, price range: {}-{}, rating: {}, sortedByPrice: {}",
-                    destination, priceRange[0], priceRange[1], rating, sortedByPrice);
+                    destination, priceRange[0], priceRange[1], rating != 0 ? rating : "any", sortedByPrice);
         else
             log.info("Filtering hotels with destination: {}, rating: {}, sortedByPrice: {}",
-                    destination, rating, sortedByPrice);
+                    destination, rating != 0 ? rating : "any", sortedByPrice);
 
         List<CardContainer> filtered = hotels.stream()
                 .filter(hotel -> destination == null || hotel.getDestination().contains(destination))
