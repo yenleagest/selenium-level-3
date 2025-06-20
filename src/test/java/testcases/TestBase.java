@@ -13,7 +13,7 @@ public class TestBase {
     @DataProvider(name = "dataByMethod")
     public Object[][] getAgodaTestData(Method method) {
         try {
-            return YmlParser.getDataByTestMethod(method.getName());
+            return YmlParser.getTestDataByMethod(method.getName());
         } catch (Exception e) {
             throw new IllegalStateException("Failed to load test data for method: " + method.getName(), e);
         }

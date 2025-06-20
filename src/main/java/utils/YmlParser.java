@@ -16,7 +16,7 @@ import static common.Constants.RESOURCE_TEST_DATA_PATH;
 @Slf4j
 public class YmlParser {
 
-    public static Object[][] getDataByTestMethod(String testMethod) {
+    public static Object[][] getTestDataByMethod(String testMethod) {
         InputStream inputStream;
         try {
             inputStream = new FileInputStream(RESOURCE_TEST_DATA_PATH);

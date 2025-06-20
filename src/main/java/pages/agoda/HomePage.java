@@ -1,6 +1,5 @@
 package pages.agoda;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import data.models.Occupancy;
 import drivers.DriverUtils;
@@ -12,6 +11,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 
+import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static pages.agoda.HomePage.OccupancyType.ADULTS;
 import static pages.agoda.HomePage.OccupancyType.CHILDREN;
@@ -19,6 +19,8 @@ import static pages.agoda.HomePage.OccupancyType.ROOMS;
 
 public class HomePage {
 
+    private final By googleIframe = By.cssSelector("iframe[src*='accounts.google.com']");
+    private final By iframeCloseBtn = By.id("close");
     private final By menuIcon = By.className("HamburgerMenu");
     private final By selectedCurrency = By.cssSelector("[data-element-name='currency-container-selected-currency-name']");
     private final By vndCurrency = By.xpath("//p[text()='Vietnamese Dong']");
@@ -106,7 +108,6 @@ public class HomePage {
 
     @Step("Search for location: {location}")
     private void searchForLocation(String location) {
-        closeAppDownloadAds();
         inputValueToSearchBox(location);
         selectFirstSuggestion(location);
     }
@@ -127,7 +128,7 @@ public class HomePage {
 
     @Step("Input value to search box: {value}")
     private void inputValueToSearchBox(String value) {
-        SelenideElement e = $(searchBox).shouldBe(Condition.visible);
+        SelenideElement e = $(searchBox).shouldBe(visible);
         e.click();
         e.setValue(value);
 
@@ -190,6 +191,7 @@ public class HomePage {
 
     @Step("Select Vietnamese Dong as currency")
     private void selectVndCurrency() {
+        closeGoogleIframe();
         selectMenu();
         openCurrencySelection();
         chooseVietnameseDong();
@@ -203,11 +205,23 @@ public class HomePage {
 
     @Step("Click on current currency to open currency list")
     private void openCurrencySelection() {
-        $(selectedCurrency).shouldBe(Condition.visible).click();
+        $(selectedCurrency).shouldBe(visible).click();
     }
 
     @Step("Select 'Vietnamese Dong' from currency list")
     private void chooseVietnameseDong() {
-        $(vndCurrency).shouldBe(Condition.visible).click();
+        $(vndCurrency).shouldBe(visible).click();
+    }
+
+    @Step("Close Google account pop-up if present")
+    private void closeGoogleIframe() {
+        // a Google pop-up will open and overlap the menu if running in other browsers rather than Chrome
+        if (!System.getProperty("selenide.browser").equalsIgnoreCase("chrome")) {
+            SelenideElement iframe = $(googleIframe);
+            iframe.shouldBe(visible);
+            DriverUtils.switchToIframe(iframe);
+            $(iframeCloseBtn).click();
+            DriverUtils.switchToDefaultContent();
+        }
     }
 }

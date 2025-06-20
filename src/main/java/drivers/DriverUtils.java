@@ -1,5 +1,6 @@
 package drivers;
 
+import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.WebDriver;
 
 import static com.codeborne.selenide.Selenide.open;
@@ -25,5 +26,13 @@ public class DriverUtils {
 
     public static void switchToLatestTab() {
         switchTo().window(getDriver().getWindowHandles().size() - 1);
+    }
+
+    public static void switchToIframe(SelenideElement element) {
+        switchTo().frame(element);
+    }
+
+    public static void switchToDefaultContent() {
+        switchTo().defaultContent();
     }
 }
