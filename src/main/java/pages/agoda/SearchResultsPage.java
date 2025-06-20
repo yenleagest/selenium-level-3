@@ -10,6 +10,7 @@ import org.openqa.selenium.Keys;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
@@ -125,7 +126,7 @@ public class SearchResultsPage extends HomePage {
     }
 
     private int getFilterPrice(By locator) {
-        String priceText = $(locator).getAttribute("value").replaceAll("[^\\d]", "");
+        String priceText = Objects.requireNonNull($(locator).getAttribute("value")).replaceAll("\\D", "");
         if (priceText.isEmpty()) {
             throw new IllegalStateException("Price filter is missing or empty.");
         }

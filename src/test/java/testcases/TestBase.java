@@ -13,13 +13,8 @@ public class TestBase {
     @DataProvider(name = "dataByMethod")
     public Object[][] getAgodaTestData(Method method) {
         try {
-            Object[][] data = YmlParser.getAgodaTestData(method.getName());
-            if (data.length == 0) {
-                throw new IllegalStateException("No test data found for method: " + method.getName());
-            }
-            return data;
+            return YmlParser.getDataByTestMethod(method.getName());
         } catch (Exception e) {
-            System.err.println("Exception loading data for " + method.getName() + ": " + e.getMessage());
             throw new IllegalStateException("Failed to load test data for method: " + method.getName(), e);
         }
     }

@@ -1,8 +1,6 @@
 package testcases.agoda;
 
-import actions.HomePageActions;
 import data.models.CardContainer;
-import data.models.Occupancy;
 import drivers.DriverUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.BeforeMethod;
@@ -21,8 +19,6 @@ public class SearchAndSortHotelTest extends TestBase {
     SoftAssert softAssert;
     HomePage homePage;
     SearchResultsPage searchResultsPage;
-    HomePageActions homePageActions;
-    Occupancy occupancy;
     String location;
     int resultCount;
     List<CardContainer> hotels;
@@ -37,7 +33,6 @@ public class SearchAndSortHotelTest extends TestBase {
         DriverUtils.openURL();  // Navigate to https://www.agoda.com/
         softAssert = new SoftAssert();
         homePage = new HomePage();
-        homePageActions = new HomePageActions(homePage);
         searchResultsPage = new SearchResultsPage();
     }
 

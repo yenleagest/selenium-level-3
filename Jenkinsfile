@@ -102,7 +102,6 @@ pipeline {
                     sh """
                         mvn -q test \
                         -Dselenide.browser=${params.BROWSER} \
-                        -Dselenide.browserSize=1920x1080 \
                         -Dselenide.headless=true \
                         -Dselenide.timeout=${params.DEFAULT_TIMEOUT} \
                         -Dselenide.pageLoadStrategy=${params.PAGE_LOAD_STRATEGY} \
@@ -241,7 +240,7 @@ pipeline {
                         """,
                             mimeType: 'text/html',
                             to: "${params.EMAIL_RECIPIENTS}",
-                             attachmentsPattern: 'allure-report.zip')
+                            attachmentsPattern: 'allure-report.zip')
                 } else {
                     echo "No recipients specified. Skipping email notification."
                 }

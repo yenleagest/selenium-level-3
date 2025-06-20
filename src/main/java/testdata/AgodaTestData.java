@@ -13,6 +13,7 @@ import java.time.DayOfWeek;
 @NoArgsConstructor
 public class AgodaTestData {
 
+    private String testMethod;
     private String location;
     private DayOfWeek weekday;
     private Integer duration;

@@ -1,6 +1,5 @@
 package pages.agoda;
 
-import actions.HomePageActions;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import data.models.Occupancy;
@@ -14,10 +13,15 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 
 import static com.codeborne.selenide.Selenide.$;
+import static pages.agoda.HomePage.OccupancyType.ADULTS;
+import static pages.agoda.HomePage.OccupancyType.CHILDREN;
+import static pages.agoda.HomePage.OccupancyType.ROOMS;
 
 public class HomePage {
 
-    private final HomePageActions homePageActions = new HomePageActions(this);
+    private final By menuIcon = By.className("HamburgerMenu");
+    private final By selectedCurrency = By.cssSelector("[data-element-name='currency-container-selected-currency-name']");
+    private final By vndCurrency = By.xpath("//p[text()='Vietnamese Dong']");
     private final By searchBox = By.id("textInput");
     private final By occContainer = By.className("OccupancySelector");
     private final By searchBtn = By.cssSelector("[data-selenium='searchButton']");
@@ -73,9 +77,10 @@ public class HomePage {
 
     @Step("Search a hotel with given information: {location}, {duration} days from next {targetDay}, occupancy: {occupancy}")
     public void searchHotel(String location, DayOfWeek targetDay, int duration, Occupancy occupancy) {
+        selectVndCurrency();
         searchForLocation(location);
         selectDate(targetDay, duration);
-        homePageActions.setOccupancyTo(occupancy);
+        setOccupancyTo(occupancy);
         clickSearchButton();
     }
 
@@ -145,5 +150,64 @@ public class HomePage {
         if ($(closeDownloadAppBtn).isDisplayed()) {
             $(closeDownloadAppBtn).click();
         }
+    }
+
+    @Step("Select occupancy: {target}")
+    private void setOccupancyTo(Occupancy target) {
+        adjustRooms(target.getRooms());
+        adjustAdults(target.getAdults());
+        adjustChildren(target.getChildren());
+        selectOccupancyContainer(); // to close the container
+    }
+
+    @Step("Select {target} rooms")
+    private void adjustRooms(int target) {
+        adjustUntilEqual(ROOMS, getCurrentOccupancy().getRooms(), target);
+    }
+
+    @Step("Select {target} adults")
+    private void adjustAdults(int target) {
+        adjustUntilEqual(ADULTS, getCurrentOccupancy().getAdults(), target);
+    }
+
+    @Step("Select {target} children")
+    private void adjustChildren(int target) {
+        adjustUntilEqual(CHILDREN, getCurrentOccupancy().getChildren(), target);
+    }
+
+    @Step("Set {type} to {target}")
+    private void adjustUntilEqual(OccupancyType type, int current, int target) {
+        if (current < target) {
+            for (int i = current; i < target; i++) {
+                increaseOcc(type);
+            }
+        } else if (current > target) {
+            for (int i = current; i > target; i--) {
+                decreaseOcc(type);
+            }
+        }
+    }
+
+    @Step("Select Vietnamese Dong as currency")
+    private void selectVndCurrency() {
+        selectMenu();
+        openCurrencySelection();
+        chooseVietnameseDong();
+        selectMenu(); // to close the menu
+    }
+
+    @Step("Click on the menu icon")
+    private void selectMenu() {
+        $(menuIcon).click();
+    }
+
+    @Step("Click on current currency to open currency list")
+    private void openCurrencySelection() {
+        $(selectedCurrency).shouldBe(Condition.visible).click();
+    }
+
+    @Step("Select 'Vietnamese Dong' from currency list")
+    private void chooseVietnameseDong() {
+        $(vndCurrency).shouldBe(Condition.visible).click();
     }
 }

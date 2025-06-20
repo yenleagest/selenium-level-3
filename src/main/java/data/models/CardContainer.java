@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 @Slf4j
 public class CardContainer {
-
+    // mention in the docs
     String destination;
     int price;
     int rating;

@@ -1,0 +1,23 @@
+testMethod: searchAndFilterHotel
+location: Da Nang
+weekday: FRIDAY
+duration: 3
+resultCount: 5
+occupancy:
+  rooms: 2
+  adults: 4
+  children: 0
+rating: 3
+minPrice: 500000
+maxPrice: 1000000
+---
+testMethod: searchAndSortHotel
+location: Da Nang
+weekday: FRIDAY
+duration: 3
+resultCount: 5
+occupancy:
+  rooms: 2
+  adults: 4
+  children: 0
+sortBy: LOWEST_PRICE_FIRST
