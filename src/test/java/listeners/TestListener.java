@@ -1,5 +1,6 @@
 package listeners;
 
+import drivers.DriverUtils;
 import io.qameta.allure.Allure;
 import org.testng.IAnnotationTransformer;
 import org.testng.ITestContext;
@@ -12,6 +13,7 @@ import retriers.RetryAnalyzer;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 
 public class TestListener implements ITestListener, IAnnotationTransformer {
@@ -36,6 +38,7 @@ public class TestListener implements ITestListener, IAnnotationTransformer {
     @Override
     public void onTestFailure(ITestResult result) {
         Allure.addAttachment("screenshot", "image/png", new ByteArrayInputStream(AllureManager.takeScreenshot()), "png");
+        Allure.addAttachment("Page HTML", "text/html", Objects.requireNonNull(DriverUtils.getDriver().getPageSource()), ".html");
     }
 
     @Override

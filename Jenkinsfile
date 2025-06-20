@@ -190,7 +190,7 @@ pipeline {
                     // generate html report to attach to the email
                     sh """
                         allure generate --clean --single-file allure-results -o allure-report
-                        mv allure-report/index.html allure-report/report.html
+                        zip allure-report.zip allure-report/index.html || true
                     """
                     emailext(subject: "Build Notifications - #${env.BUILD_NUMBER} - ${params.SUITE_NAME} - ${currentBuild.currentResult}",
                             body: """
@@ -234,13 +234,13 @@ pipeline {
                             </table>
 
                             <p style="margin-top: 20px;">📦 <a href="${env.BUILD_URL}">View Jenkins Build</a></p>
-                            <p><b>⛑️ Note:</b> If you can’t access the Jenkins build, please download the attached <code>report.html</code> file, and open it in your browser to view the test report.</p>
+                            <p><b>⛑️ Note:</b> If you can’t access the Jenkins build, please download the attached <code>allure-report.zip</code> file, and open it in your browser to view the test report.</p>
                         </body>
                         </html>
                         """,
                             mimeType: 'text/html',
                             to: "${params.EMAIL_RECIPIENTS}",
-                            attachmentsPattern: 'allure-report/report.html',)
+                            attachmentsPattern: 'allure-report.zip')
                 } else {
                     echo "No recipients specified. Skipping email notification."
                 }

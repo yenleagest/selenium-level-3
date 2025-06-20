@@ -6,8 +6,8 @@
     </listeners>
     <test name="AgodaRegression">
         <classes>
-            <class name="testcases.agoda.TC01"/>
-            <class name="testcases.agoda.TC02"/>
+            <class name="testcases.agoda.SearchAndSortHotelTest"/>
+            <class name="testcases.agoda.SearchAndFilterHotelTest"/>
         </classes>
     </test>
 </suite>
