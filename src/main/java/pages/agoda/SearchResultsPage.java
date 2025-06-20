@@ -2,7 +2,8 @@ package pages.agoda;
 
 import com.codeborne.selenide.SelenideElement;
 import data.enums.SortBy;
-import data.models.CardContainer;
+import data.models.Hotel;
+import data.models.PriceFilter;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
@@ -38,10 +39,10 @@ public class SearchResultsPage extends HomePage {
         e.click();
     }
 
-    @Step("Filter price from {min} to {max}")
-    public void filterPrice(int min, int max) {
-        setFilterPrice(minPrice, min);
-        setFilterPrice(maxPrice, max);
+    @Step("Filter price: {priceFilter}")
+    public void filterPrice(PriceFilter priceFilter) {
+        setFilterPrice(minPrice, priceFilter.getMin());
+        setFilterPrice(maxPrice, priceFilter.getMax());
     }
 
     public String getCurrencySymbol() {
@@ -61,19 +62,18 @@ public class SearchResultsPage extends HomePage {
     }
 
     @Step("Get price filter slider values")
-    public List<Integer> getPriceFilterValues() {
-        List<Integer> sliderValues = new ArrayList<>();
-
-        sliderValues.add(getFilterPrice(minPrice));
-        sliderValues.add(getFilterPrice(maxPrice));
+    public PriceFilter getPriceFilterValues() {
+        PriceFilter sliderValues = new PriceFilter(
+                getFilterPrice(minPrice),
+                getFilterPrice(maxPrice)
+        );
         log.info("Price filter slider values: {}", sliderValues);
-
         return sliderValues;
     }
 
     @Step("Get hotel details for the first {count} results")
-    public List<CardContainer> getHotels(int count) {
-        List<CardContainer> cardContainers = new ArrayList<>();
+    public List<Hotel> getHotels(int count) {
+        List<Hotel> cardContainers = new ArrayList<>();
 
         int retries = 0;
         // scroll into center of each card
@@ -84,7 +84,7 @@ public class SearchResultsPage extends HomePage {
 
             card.scrollIntoView("{block: 'center'}").shouldBe(visible);
 
-            CardContainer hotel = getHotel(card);
+            Hotel hotel = getHotel(card);
             cardContainers.add(hotel);
             log.info("Hotel details [{}]: {}", cardContainers.size(), hotel);
         }
@@ -92,8 +92,8 @@ public class SearchResultsPage extends HomePage {
         return cardContainers;
     }
 
-    private CardContainer getHotel(SelenideElement container) {
-        return new CardContainer(extractDestination(container), extractPrice(container), extractRating(container));
+    private Hotel getHotel(SelenideElement container) {
+        return new Hotel(extractDestination(container), extractPrice(container), extractRating(container));
     }
 
     private String extractDestination(SelenideElement container) {

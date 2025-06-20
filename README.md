@@ -9,29 +9,25 @@ automated UI tests.
 ## 🗳️ Project Progress
 
 ### Outcomes
-| Outcomes                                                                         | Status            |
-|----------------------------------------------------------------------------------|-------------------|
-| 1. Selenide FW([selenide.org](https://selenide.org/)): automation/test framework | ✅                 |
-| 2. Reports: HTML, Allure Report, Report Portal                                   | ✅                 |
-| 3. Test retry: test failed ⇒ retry (1, 2)                                        | ✅                 |
-| 4. Parallel/distributed testing                                                  | ✅                 |
-| 5. Cross browsers testing: Chrome, Edge                                          | ✅                 |
-| 6. Selenium Grid/Shard                                                           | ✅                 |
-| 7. Test cases: VJ, Agoda, TBD                                                    | ❌ (only 2/6 done) |
-| 8. CI: Schedule test, send email notification result with summary                | ✅                 |
+- [x] Selenide FW ([selenide.org](https://selenide.org/)): automation/test framework
+- [x] Reports: HTML, Allure Report, Report Portal
+- [x] Test retry: test failed ⇒ retry (1, 2)
+- [x] Parallel/distributed testing
+- [x] Cross browsers testing: Chrome, Edge
+- [x] Selenium Grid/Shard
+- [ ] Test cases: VJ, Agoda, TBD (only 2/6 done)
+- [x] CI: Schedule test, send email notification result with summary
 
 ### User Cases
-| User Cases                                                         | Status |
-|--------------------------------------------------------------------|--------|
-| 1. Content testing                                                 | ❌      |
-| 2. Multiple languages testing                                      | ❌      |
-| 3. Group tests by purposes: regression, smoke/sanity test          | ✅      |
-| 4. Source control practice: branch                                 | ✅      |
-| 5. Switch test environment: dev, stg (dev: agoda.com, stg: vj.com) | ✅      |
-| 6. Wrap custom controls                                            | ❌      |
-| 7. Data driven testing: test data is in excel file                 | ❌      |
-| 8. Working with Shadow DOM                                         | ❌      |
-| 9. Compare with another FW e.g. Playwright                         | ❌      |
+- [ ] Content testing
+- [ ] Multiple languages testing
+- [x] Group tests by purposes: regression, smoke/sanity test
+- [x] Source control practice: branch
+- [x] Switch test environment: dev, stg (dev: agoda.com, stg: vj.com)
+- [ ] Wrap custom controls
+- [ ] Data driven testing: test data is in excel file
+- [ ] Working with Shadow DOM
+- [ ] Compare with another FW e.g. Playwright
 
 ---
 

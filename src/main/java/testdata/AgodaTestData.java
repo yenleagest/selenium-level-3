@@ -2,6 +2,7 @@ package testdata;
 
 import data.enums.SortBy;
 import data.models.Occupancy;
+import data.models.PriceFilter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,12 +16,11 @@ public class AgodaTestData {
 
     private String testMethod;
     private String location;
-    private DayOfWeek weekday;
-    private Integer duration;
+    private DayOfWeek checkIn;
+    private Integer checkOut;
     private Integer resultCount;
     private Occupancy occupancy;
-    private Integer minPrice;
-    private Integer maxPrice;
+    private PriceFilter priceFilter;
     private Integer rating;
     private SortBy sortBy;
 }

@@ -1,6 +1,7 @@
 package testcases.agoda;
 
-import data.models.CardContainer;
+import data.models.Hotel;
+import data.models.PriceFilter;
 import drivers.DriverUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -9,8 +10,10 @@ import pages.agoda.HomePage;
 import pages.agoda.SearchResultsPage;
 import testcases.TestBase;
 import testdata.AgodaTestData;
+import utils.HotelFilters;
 
-import java.util.Collections;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 public class SearchAndFilterHotelTest extends TestBase {
@@ -18,16 +21,12 @@ public class SearchAndFilterHotelTest extends TestBase {
     SoftAssert softAssert;
     HomePage homePage;
     SearchResultsPage searchResultsPage;
-    String location;
-    int rating;
-    int resultCount;
-    int minPrice;
-    int maxPrice;
-    List<CardContainer> hotels;
-    List<CardContainer> filteredHotels;
-    List<Integer> defaultPriceFilter;
-    List<Integer> actualPriceFilter;
-    List<Integer> inputPriceFilter;
+    LocalDate checkInDate;
+    LocalDate checkOutDate;
+    PriceFilter defaulPriceFilter;
+    PriceFilter actualPriceFilter;
+    List<Hotel> hotels;
+    List<Hotel> filteredHotels;
     List<String> destinations;
     List<String> filteredDestinations;
 
@@ -41,55 +40,57 @@ public class SearchAndFilterHotelTest extends TestBase {
 
     @Test(dataProvider = "dataByMethod", groups = {"smoke", "regression"}, description = "Search and filter hotel successfully")
     public void searchAndFilterHotel(AgodaTestData data) {
-        location = data.getLocation();
-        resultCount = data.getResultCount();
-        rating = data.getRating();
-        minPrice = data.getMinPrice();
-        maxPrice = data.getMaxPrice();
-        inputPriceFilter = List.of(minPrice, maxPrice);
+
+        checkInDate = LocalDate.now().with(TemporalAdjusters.next(data.getCheckIn()));
+        checkOutDate = checkInDate.plusDays(data.getCheckOut());
 
         /* Search the hotel with the following information:
             - Place: Da Nang
             - Date: 3 days from next Friday
             - Number of people: Family Travelers -> 2 rooms and 4 adults
         */
-        homePage.searchHotel(location,
-                data.getWeekday(),
-                data.getDuration(),
+        homePage.searchHotel(data.getLocation(),
+                checkInDate,
+                checkOutDate,
                 data.getOccupancy());
 
-        defaultPriceFilter = searchResultsPage.getPriceFilterValues(); // get default price filter to reset later
+        defaulPriceFilter = searchResultsPage.getPriceFilterValues(); // get default price filter to reset later
 
         // Search result is displayed correctly with first 5 hotels(destination).
-        hotels = searchResultsPage.getHotels(resultCount);
-        filteredHotels = CardContainer.filteredHotels(hotels, location, false, 0);
-        softAssert.assertEquals(destinations, filteredDestinations, "Not all results contain '%s': %s".formatted(location, hotels));
+        hotels = searchResultsPage.getHotels(data.getResultCount());
+        filteredHotels = new HotelFilters(hotels)
+                .filterByDestination(data.getLocation())
+                .get();
+        softAssert.assertEquals(destinations, filteredDestinations);
 
         /* Filter the hotels with the following info:
             - Price: 500000-1000000VND
             - Star:3
          */
-        searchResultsPage.filterPrice(minPrice, maxPrice);
-        searchResultsPage.filterStar(rating);
+        searchResultsPage.filterPrice(data.getPriceFilter());
+        searchResultsPage.filterStar(data.getRating());
 
         // The price and star filtered is highlighted
         actualPriceFilter = searchResultsPage.getPriceFilterValues();
-        softAssert.assertEquals(actualPriceFilter, inputPriceFilter, "Price filter does not match\n - Expected: %s\n - Actual: %s".formatted(inputPriceFilter, actualPriceFilter));
-        softAssert.assertTrue(searchResultsPage.isStarRatingSelected(rating), "Star rating %s is not selected".formatted(rating));
+        softAssert.assertEquals(actualPriceFilter, data.getPriceFilter());
+        softAssert.assertTrue(searchResultsPage.isStarRatingSelected(data.getRating()));
 
         // Search Result is displayed correctly with first 5 hotels(destination, price, star).
-        hotels = searchResultsPage.getHotels(resultCount);
-        filteredHotels = CardContainer.filteredHotels(hotels, location, false, rating, minPrice, maxPrice);
-        softAssert.assertEquals(hotels, filteredHotels, "Not all results match condition: %s".formatted(hotels));
+        hotels = searchResultsPage.getHotels(data.getResultCount());
+        filteredHotels = new HotelFilters(hotels)
+                .filterByDestination(data.getLocation())
+                .filterByRating(data.getRating())
+                .filterByPriceRange(data.getPriceFilter())
+                .get();
+        softAssert.assertEquals(hotels, filteredHotels);
 
         // Remove price filter
-        searchResultsPage.filterPrice(Collections.min(defaultPriceFilter), Collections.max(defaultPriceFilter));
+        searchResultsPage.filterPrice(defaulPriceFilter);
 
         // The price slice is reset
         actualPriceFilter = searchResultsPage.getPriceFilterValues();
-        softAssert.assertEquals(actualPriceFilter, defaultPriceFilter, "Price filter is not reset: %s".formatted(actualPriceFilter));
+        softAssert.assertEquals(actualPriceFilter, defaulPriceFilter);
 
         softAssert.assertAll();
     }
 }
-

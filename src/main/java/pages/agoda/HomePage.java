@@ -7,9 +7,7 @@ import io.qameta.allure.Step;
 import lombok.AllArgsConstructor;
 import org.openqa.selenium.By;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
-import java.time.temporal.TemporalAdjusters;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
@@ -77,17 +75,17 @@ public class HomePage {
         }
     }
 
-    @Step("Search a hotel with given information: {location}, {duration} days from next {targetDay}, occupancy: {occupancy}")
-    public void searchHotel(String location, DayOfWeek targetDay, int duration, Occupancy occupancy) {
+    @Step("Search a hotel with given information: {location}, check-in {checkIn}, check-out {checkOut}, occupancy: {occupancy}")
+    public void searchHotel(String location, LocalDate checkIn, LocalDate checkOut, Occupancy occupancy) {
         selectVndCurrency();
         searchForLocation(location);
-        selectDate(targetDay, duration);
+        selectDate(checkIn, checkOut);
         setOccupancyTo(occupancy);
         clickSearchButton();
     }
 
-    @Step("Click on occupancy container")
-    public void selectOccupancyContainer() {
+    @Step("Close occupancy container")
+    public void closeOccupancyContainer() {
         $(occContainer).click();
     }
 
@@ -112,12 +110,10 @@ public class HomePage {
         selectFirstSuggestion(location);
     }
 
-    @Step("Select check-in and check-out date: {duration} days from next {targetDay}")
-    private void selectDate(DayOfWeek targetDay, int duration) {
-        LocalDate checkinDate = LocalDate.now().with(TemporalAdjusters.next(targetDay));
-        LocalDate checkoutDate = checkinDate.plusDays(duration);
-        selectDate(checkinDate);
-        selectDate(checkoutDate);
+    @Step("Select check-in and check-out date: {checkIn} - {checkOut}")
+    private void selectDate(LocalDate checkIn, LocalDate checkOut) {
+        selectDate(checkIn);
+        selectDate(checkOut);
     }
 
     @Step("Click search button")
@@ -158,7 +154,7 @@ public class HomePage {
         adjustRooms(target.getRooms());
         adjustAdults(target.getAdults());
         adjustChildren(target.getChildren());
-        selectOccupancyContainer(); // to close the container
+        closeOccupancyContainer(); // to close the container
     }
 
     @Step("Select {target} rooms")
@@ -215,8 +211,8 @@ public class HomePage {
 
     @Step("Close Google account pop-up if present")
     private void closeGoogleIframe() {
-        // a Google pop-up will open and overlap the menu if running in other browsers rather than Chrome
-        if (!System.getProperty("selenide.browser").equalsIgnoreCase("chrome")) {
+        // a Google pop-up will open and overlap the menu button if running in other browsers rather than Chrome
+        if ($(googleIframe).exists()) {
             SelenideElement iframe = $(googleIframe);
             iframe.shouldBe(visible);
             DriverUtils.switchToIframe(iframe);
