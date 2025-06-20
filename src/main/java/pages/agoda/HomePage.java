@@ -85,7 +85,7 @@ public class HomePage {
     }
 
     @Step("Close occupancy container")
-    public void closeOccupancyContainer() {
+    public void confirmOccupancy() {
         $(occContainer).click();
     }
 
@@ -154,7 +154,7 @@ public class HomePage {
         adjustRooms(target.getRooms());
         adjustAdults(target.getAdults());
         adjustChildren(target.getChildren());
-        closeOccupancyContainer(); // to close the container
+        confirmOccupancy(); // to close the container
     }
 
     @Step("Select {target} rooms")
