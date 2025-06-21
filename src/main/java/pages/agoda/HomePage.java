@@ -1,11 +1,13 @@
 package pages.agoda;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import data.models.Occupancy;
 import drivers.DriverUtils;
 import io.qameta.allure.Step;
 import lombok.AllArgsConstructor;
 import org.openqa.selenium.By;
+import utils.DateTimeUtils;
 
 import java.time.LocalDate;
 
@@ -20,6 +22,9 @@ public class HomePage {
     private final By googleIframe = By.cssSelector("iframe[src*='accounts.google.com']");
     private final By iframeCloseBtn = By.id("close");
     private final By menuIcon = By.className("HamburgerMenu");
+    private final By datePickerCaption = By.className("DayPicker-Caption");
+    private final By previousMonthBtn = By.cssSelector("[aria-label='Previous Month']");
+    private final By nextMonthBtn = By.cssSelector("[aria-label='Next Month']");
     private final By selectedCurrency = By.cssSelector("[data-element-name='currency-container-selected-currency-name']");
     private final By vndCurrency = By.xpath("//p[text()='Vietnamese Dong']");
     private final By searchBox = By.id("textInput");
@@ -112,7 +117,9 @@ public class HomePage {
 
     @Step("Select check-in and check-out date: {checkIn} - {checkOut}")
     private void selectDate(LocalDate checkIn, LocalDate checkOut) {
+        moveDatePickerToMonth(checkIn);
         selectDate(checkIn);
+        moveDatePickerToMonth(checkOut);
         selectDate(checkOut);
     }
 
@@ -187,6 +194,7 @@ public class HomePage {
 
     @Step("Select Vietnamese Dong as currency")
     private void selectVndCurrency() {
+        closeAppDownloadAds();
         closeGoogleIframe();
         selectMenu();
         openCurrencySelection();
@@ -219,5 +227,22 @@ public class HomePage {
             $(iframeCloseBtn).click();
             DriverUtils.switchToDefaultContent();
         }
+    }
+
+    private void moveDatePickerToMonth(LocalDate localDate) {
+        String datePickerValue = getDatePickerValue();
+        String timeRelation = DateTimeUtils.getTimeRelation(datePickerValue, localDate);
+        while (!timeRelation.equals("current")) {
+            if (timeRelation.equals("previous")) {
+                $(nextMonthBtn).click();
+            } else {
+                $(previousMonthBtn).click();
+            }
+            timeRelation = DateTimeUtils.getTimeRelation(getDatePickerValue(), localDate);
+        }
+    }
+
+    private String getDatePickerValue() {
+        return $(datePickerCaption).shouldBe(visible).shouldNotHave(Condition.exactText("")).getText().trim();
     }
 }
