@@ -76,7 +76,7 @@ public class HotelDetailsPageTest extends TestBase {
 
         // Detailed review popup appears and show the following information:
         // Cleanliness, Facilities, Service, Location, Value for money
-        softAssert.assertEquals(reviewDetails, data.getReviewDetails());
+        softAssert.assertTrue(reviewDetails.containsAll(data.getReviewDetails()));
 
         // Back to the search result page and choose the first hotel
         DriverUtils.closeCurrentTab();

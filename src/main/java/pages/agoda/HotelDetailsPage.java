@@ -1,15 +1,14 @@
 package pages.agoda;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import data.models.Hotel;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static com.codeborne.selenide.Condition.exist;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
@@ -45,11 +44,7 @@ public class HotelDetailsPage extends HomePage {
 
     @Step("Get hotel's destination")
     private String getDestination() {
-        String dest = $(destination).shouldBe(visible).getText().trim();
-        if (dest.isEmpty()) {
-            throw new IllegalStateException("Destination is missing or empty for a hotel card.");
-        }
-        return dest;
+        return $(destination).shouldBe(visible).shouldNotHave(Condition.exactText("")).getText().trim();
     }
 
     @Step("Get hotel's name")
@@ -78,11 +73,9 @@ public class HotelDetailsPage extends HomePage {
 
     @Step("Get hotel's benefits")
     private List<String> getBenefits() {
-        List<String> benefitsList = new ArrayList<>();
-        for (SelenideElement benefit : $$(benefits)) {
-            benefit.shouldBe(exist);
-            benefitsList.add(benefit.getText().trim());
-        }
-        return benefitsList;
+        return $$(benefits).stream()
+                .map(SelenideElement::getText)
+                .filter(text -> !text.isEmpty())
+                .toList();
     }
 }
