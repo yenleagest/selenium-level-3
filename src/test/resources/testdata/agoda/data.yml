@@ -22,3 +22,22 @@ occupancy:
   adults: 4
   children: 0
 sortBy: LOWEST_PRICE_FIRST
+---
+testMethod: hotelDetailsPage
+location: Da Nang
+checkIn: FRIDAY
+checkOut: 3
+resultCount: 5
+occupancy:
+  rooms: 2
+  adults: 4
+  children: 0
+facility: NONE_SMOKING
+benefits:
+  - Swimming pool
+reviewDetails:
+  - Location
+  - Service
+  - Value for money
+  - Cleanliness
+  - Facilities

@@ -1,9 +1,11 @@
 package pages.agoda;
 
 import com.codeborne.selenide.SelenideElement;
+import data.enums.Facilities;
 import data.enums.SortBy;
 import data.models.Hotel;
 import data.models.PriceFilter;
+import drivers.DriverUtils;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
@@ -30,7 +32,10 @@ public class SearchResultsPage extends HomePage {
     private final String cardContainer = "PropertyCardItem";
     private final String finalPrice = "[data-element-name='final-price']";
     private final String destination = "[data-selenium='area-city']";
+    private final String hotelName = "[data-selenium='hotel-name']";
+    private final String hotelByName = "//h3[text()='%s']";
     private final String starContainer = "[data-testid='rating-container'] span";
+    private final String facilityFilter = "//div[@id='SideBarLocationFilters']//span[text()='%s']";
 
     @Step("Sort results by: {sortBy}")
     public void sortResultsBy(SortBy sortBy) {
@@ -92,16 +97,37 @@ public class SearchResultsPage extends HomePage {
         return cardContainers;
     }
 
+    @Step("Filter hotels by facility: {facility}")
+    public void filterByFacility(Facilities facility) {
+        SelenideElement e = $(By.xpath(facilityFilter.formatted(facility.getFacility())));
+        e.scrollIntoView("{block: 'center'}").click();
+    }
+
+    @Step("Go to {hotelName} hotel details page")
+    public void goToHotelDetailsPage(String hotelName) {
+        SelenideElement hotel = $(By.xpath(hotelByName.formatted(hotelName)));
+        hotel.scrollIntoView("{block: 'center'}").shouldBe(visible).click();
+        DriverUtils.switchToLatestTab();
+    }
+
     private Hotel getHotel(SelenideElement container) {
-        return new Hotel(extractDestination(container), extractPrice(container), extractRating(container));
+        return new Hotel(extractHotelName(container), extractDestination(container), extractPrice(container), extractRating(container), null);
     }
 
     private String extractDestination(SelenideElement container) {
-        String dest = container.$(destination).shouldBe(visible).getText().trim();
+        String dest = container.$(destination).shouldBe(visible).getText().split("-")[0].trim();
         if (dest.isEmpty()) {
             throw new IllegalStateException("Destination is missing or empty for a hotel card.");
         }
         return dest;
+    }
+
+    private String extractHotelName(SelenideElement container) {
+        String name = container.$(hotelName).shouldBe(visible).getText().trim();
+        if (name.isEmpty()) {
+            throw new IllegalStateException("Hotel name is missing or empty for a hotel card.");
+        }
+        return name;
     }
 
     private int extractPrice(SelenideElement container) {
