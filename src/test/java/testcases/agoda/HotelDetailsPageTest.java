@@ -27,7 +27,7 @@ public class HotelDetailsPageTest extends TestBase {
     List<Hotel> hotels;
     Hotel hotelDetails;
     List<Hotel> filteredHotels;
-    List<String> destinations;
+    List<String> reviewDetails;
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() {
@@ -72,7 +72,7 @@ public class HotelDetailsPageTest extends TestBase {
         softAssert.assertTrue(hotelDetails.getBenefits().containsAll(data.getBenefits()));
 
         // Move mouse to point of the hotel to show detailed review points
-        List<String> reviewDetails = hotelDetailsPage.showReviewDetails();
+        reviewDetails = hotelDetailsPage.showReviewDetails();
 
         // Detailed review popup appears and show the following information:
         // Cleanliness, Facilities, Service, Location, Value for money

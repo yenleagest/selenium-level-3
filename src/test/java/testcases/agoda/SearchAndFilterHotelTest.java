@@ -27,7 +27,6 @@ public class SearchAndFilterHotelTest extends TestBase {
     PriceFilter actualPriceFilter;
     List<Hotel> hotels;
     List<Hotel> filteredHotels;
-    List<String> destinations;
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() {

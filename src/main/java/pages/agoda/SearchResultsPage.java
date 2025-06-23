@@ -33,7 +33,7 @@ public class SearchResultsPage extends HomePage {
     private final String finalPrice = "[data-element-name='final-price']";
     private final String destination = "[data-selenium='area-city']";
     private final String hotelName = "[data-selenium='hotel-name']";
-    private final String hotelByName = "//h3[text()='%s']";
+    private final String hotelByName = "//h3[@data-selenium='hotel-name'][text()='%s']";
     private final String starContainer = "[data-testid='rating-container'] span";
     private final String facilityFilter = "//div[@id='SideBarLocationFilters']//span[text()='%s']";
 
