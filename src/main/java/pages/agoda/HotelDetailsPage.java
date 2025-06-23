@@ -66,9 +66,9 @@ public class HotelDetailsPage extends HomePage {
     }
 
     @Step("Get hotel's rating")
-    private int getRating() {
+    private float getRating() {
         String text = $(rating).shouldBe(visible).getText().split(" ")[0];
-        return (int) Math.floor(Double.parseDouble(text));
+        return Float.parseFloat(text);
     }
 
     @Step("Get hotel's benefits")

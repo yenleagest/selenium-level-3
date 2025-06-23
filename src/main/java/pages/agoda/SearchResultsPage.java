@@ -138,9 +138,9 @@ public class SearchResultsPage extends HomePage {
         return Integer.parseInt(priceText);
     }
 
-    private int extractRating(SelenideElement container) {
+    private float extractRating(SelenideElement container) {
         String text = container.$(starContainer).shouldBe(visible).getText().split(" ")[0];
-        return (int) Math.floor(Double.parseDouble(text));
+        return Float.parseFloat(text);
     }
 
     private void setFilterPrice(By locator, int value) {

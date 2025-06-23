@@ -15,7 +15,7 @@ public class Hotel {
     String name;
     String destination;
     int price;
-    int rating;
+    float rating;
     List<String> benefits;
 
     public boolean equals(Hotel other) {
