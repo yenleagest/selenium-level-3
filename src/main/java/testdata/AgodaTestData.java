@@ -1,5 +1,6 @@
 package testdata;
 
+import data.enums.Facilities;
 import data.enums.SortBy;
 import data.models.Occupancy;
 import data.models.PriceFilter;
@@ -8,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.DayOfWeek;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -23,4 +25,7 @@ public class AgodaTestData {
     private PriceFilter priceFilter;
     private Integer rating;
     private SortBy sortBy;
+    private Facilities facility;
+    private List<String> benefits;
+    private List<String> reviewDetails;
 }

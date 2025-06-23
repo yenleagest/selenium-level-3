@@ -8,6 +8,7 @@
         <classes>
             <class name="testcases.agoda.SearchAndSortHotelTest"/>
             <class name="testcases.agoda.SearchAndFilterHotelTest"/>
+            <class name="testcases.agoda.HotelDetailsPageTest"/>
         </classes>
     </test>
 </suite>

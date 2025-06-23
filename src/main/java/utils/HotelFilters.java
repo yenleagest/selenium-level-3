@@ -29,7 +29,9 @@ public class HotelFilters {
     public HotelFilters filterByRating(int rating) {
         if (rating > 0) {
             hotels = hotels.stream()
-                    .filter(hotel -> hotel.getRating() == rating)
+                    // include hotels with rating in [rating, rating + 1),
+                    // e.g., for input 3, 3.5 is accepted sine it > 3.0 & < 4.0
+                    .filter(hotel -> hotel.getRating() < rating + 1 && hotel.getRating() >= rating)
                     .collect(Collectors.toList());
         }
         return this;

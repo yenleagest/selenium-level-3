@@ -1,5 +1,6 @@
 package pages.agoda;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
 import data.models.Occupancy;
 import drivers.DriverUtils;
@@ -8,6 +9,9 @@ import lombok.AllArgsConstructor;
 import org.openqa.selenium.By;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
@@ -20,6 +24,9 @@ public class HomePage {
     private final By googleIframe = By.cssSelector("iframe[src*='accounts.google.com']");
     private final By iframeCloseBtn = By.id("close");
     private final By menuIcon = By.className("HamburgerMenu");
+    private final By datePickerCaption = By.className("DayPicker-Caption");
+    private final By previousMonthBtn = By.cssSelector("[aria-label='Previous Month']");
+    private final By nextMonthBtn = By.cssSelector("[aria-label='Next Month']");
     private final By selectedCurrency = By.cssSelector("[data-element-name='currency-container-selected-currency-name']");
     private final By vndCurrency = By.xpath("//p[text()='Vietnamese Dong']");
     private final By searchBox = By.id("textInput");
@@ -138,6 +145,7 @@ public class HomePage {
 
     @Step("Select date: {date}")
     private void selectDate(LocalDate date) {
+        alignDatePickerToMonth(date);
         SelenideElement selectedDate = $(this.selectedDate.formatted(date));
         selectedDate.click();
     }
@@ -187,6 +195,7 @@ public class HomePage {
 
     @Step("Select Vietnamese Dong as currency")
     private void selectVndCurrency() {
+        closeAppDownloadAds();
         closeGoogleIframe();
         selectMenu();
         openCurrencySelection();
@@ -219,5 +228,24 @@ public class HomePage {
             $(iframeCloseBtn).click();
             DriverUtils.switchToDefaultContent();
         }
+    }
+
+    private void alignDatePickerToMonth(LocalDate localDate) {
+        YearMonth current = getYearMonthFromDatePicker();
+        YearMonth target = YearMonth.from(localDate);
+        while (!current.equals(target)) {
+            if (current.isBefore(target))
+                $(nextMonthBtn).click();
+            else
+                $(previousMonthBtn).click();
+            current = getYearMonthFromDatePicker();
+        }
+    }
+
+    private YearMonth getYearMonthFromDatePicker() {
+        // use YearMonth since the value of datePickerCaption is something like "July 2025"
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
+        String yearMonth = $(datePickerCaption).shouldBe(visible).shouldNotHave(Condition.exactText("")).getText().trim();
+        return YearMonth.parse(yearMonth, formatter);
     }
 }

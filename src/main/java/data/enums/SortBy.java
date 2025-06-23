@@ -13,12 +13,4 @@ public enum SortBy {
     HOT_DEALS("search-sort-secret-deals");
 
     private final String dataElementName;
-
-    public static SortBy fromString(String name) {
-        try {
-            return SortBy.valueOf(name.replace(" ", "_").toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("No sort by option found with name: %s".formatted(name));
-        }
-    }
 }

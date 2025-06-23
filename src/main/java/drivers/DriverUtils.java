@@ -35,4 +35,9 @@ public class DriverUtils {
     public static void switchToDefaultContent() {
         switchTo().defaultContent();
     }
+
+    public static void closeCurrentTab() {
+        getDriver().close();
+        switchToLatestTab();
+    }
 }

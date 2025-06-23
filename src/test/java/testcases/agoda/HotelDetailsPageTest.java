@@ -1,12 +1,12 @@
 package testcases.agoda;
 
 import data.models.Hotel;
-import data.models.PriceFilter;
 import drivers.DriverUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
 import pages.agoda.HomePage;
+import pages.agoda.HotelDetailsPage;
 import pages.agoda.SearchResultsPage;
 import testcases.TestBase;
 import testdata.AgodaTestData;
@@ -16,17 +16,18 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
-public class SearchAndFilterHotelTest extends TestBase {
+public class HotelDetailsPageTest extends TestBase {
 
     SoftAssert softAssert;
     HomePage homePage;
     SearchResultsPage searchResultsPage;
+    HotelDetailsPage hotelDetailsPage;
     LocalDate checkInDate;
     LocalDate checkOutDate;
-    PriceFilter defaulPriceFilter;
-    PriceFilter actualPriceFilter;
     List<Hotel> hotels;
+    Hotel hotelDetails;
     List<Hotel> filteredHotels;
+    List<String> reviewDetails;
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() {
@@ -34,10 +35,11 @@ public class SearchAndFilterHotelTest extends TestBase {
         softAssert = new SoftAssert();
         homePage = new HomePage();
         searchResultsPage = new SearchResultsPage();
+        hotelDetailsPage = new HotelDetailsPage();
     }
 
-    @Test(dataProvider = "dataByMethod", groups = {"smoke", "regression"}, description = "Search and filter hotel successfully")
-    public void searchAndFilterHotel(AgodaTestData data) {
+    @Test(dataProvider = "dataByMethod", groups = {"smoke", "regression"}, description = "Hotel details page is displayed with correct information")
+    public void hotelDetailsPage(AgodaTestData data) {
 
         checkInDate = LocalDate.now().with(TemporalAdjusters.next(data.getCheckIn()));
         checkOutDate = checkInDate.plusDays(data.getCheckOut());
@@ -52,8 +54,6 @@ public class SearchAndFilterHotelTest extends TestBase {
                 checkOutDate,
                 data.getOccupancy());
 
-        defaulPriceFilter = searchResultsPage.getPriceFilterValues(); // get default price filter to reset later
-
         // Search result is displayed correctly with first 5 hotels(destination).
         hotels = searchResultsPage.getHotels(data.getResultCount());
         filteredHotels = new HotelFilters(hotels)
@@ -61,34 +61,33 @@ public class SearchAndFilterHotelTest extends TestBase {
                 .get();
         softAssert.assertEquals(hotels, filteredHotels);
 
-        /* Filter the hotels with the following info:
-            - Price: 500000-1000000VND
-            - Star:3
-         */
-        searchResultsPage.filterPrice(data.getPriceFilter());
-        searchResultsPage.filterStar(data.getRating());
-
-        // The price and star filtered is highlighted
-        actualPriceFilter = searchResultsPage.getPriceFilterValues();
-        softAssert.assertEquals(actualPriceFilter, data.getPriceFilter());
-        softAssert.assertTrue(searchResultsPage.isStarRatingSelected(data.getRating()));
-
-        // Search Result is displayed correctly with first 5 hotels(destination, price, star).
+        // Filter the non-smoking hotels and choose the 5th hotel in the list
+        searchResultsPage.filterByFacility(data.getFacility());
         hotels = searchResultsPage.getHotels(data.getResultCount());
-        filteredHotels = new HotelFilters(hotels)
-                .filterByDestination(data.getLocation())
-                .filterByRating(data.getRating())
-                .filterByPriceRange(data.getPriceFilter())
-                .get();
-        softAssert.assertEquals(hotels, filteredHotels);
+        searchResultsPage.goToHotelDetailsPage(hotels.getLast().getName());
 
-        // Remove price filter
-        searchResultsPage.filterPrice(defaulPriceFilter);
+        // The hotel detailed page is displayed with correct info
+        hotelDetails = hotelDetailsPage.getHotel();
+        softAssert.assertTrue(hotels.getLast().equals(hotelDetails));
+        softAssert.assertTrue(hotelDetails.getBenefits().containsAll(data.getBenefits()));
 
-        // The price slice is reset
-        actualPriceFilter = searchResultsPage.getPriceFilterValues();
-        softAssert.assertEquals(actualPriceFilter, defaulPriceFilter);
+        // Move mouse to point of the hotel to show detailed review points
+        reviewDetails = hotelDetailsPage.showReviewDetails();
+
+        // Detailed review popup appears and show the following information:
+        // Cleanliness, Facilities, Service, Location, Value for money
+        softAssert.assertTrue(reviewDetails.containsAll(data.getReviewDetails()));
+
+        // Back to the search result page and choose the first hotel
+        DriverUtils.closeCurrentTab();
+        searchResultsPage.goToHotelDetailsPage(hotels.getFirst().getName());
+
+        // The hotel detailed page is displayed with correct info
+        hotelDetails = hotelDetailsPage.getHotel();
+        softAssert.assertTrue(hotels.getFirst().equals(hotelDetails));
+        softAssert.assertTrue(hotelDetails.getBenefits().containsAll(data.getBenefits()));
 
         softAssert.assertAll();
     }
 }
+
