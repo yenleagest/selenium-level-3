@@ -7,9 +7,11 @@ import drivers.DriverUtils;
 import io.qameta.allure.Step;
 import lombok.AllArgsConstructor;
 import org.openqa.selenium.By;
-import utils.DateTimeUtils;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
@@ -117,9 +119,7 @@ public class HomePage {
 
     @Step("Select check-in and check-out date: {checkIn} - {checkOut}")
     private void selectDate(LocalDate checkIn, LocalDate checkOut) {
-        moveDatePickerToMonth(checkIn);
         selectDate(checkIn);
-        moveDatePickerToMonth(checkOut);
         selectDate(checkOut);
     }
 
@@ -145,6 +145,7 @@ public class HomePage {
 
     @Step("Select date: {date}")
     private void selectDate(LocalDate date) {
+        alignDatePickerToMonth(date);
         SelenideElement selectedDate = $(this.selectedDate.formatted(date));
         selectedDate.click();
     }
@@ -229,20 +230,22 @@ public class HomePage {
         }
     }
 
-    private void moveDatePickerToMonth(LocalDate localDate) {
-        String datePickerValue = getDatePickerValue();
-        String timeRelation = DateTimeUtils.getTimeRelation(datePickerValue, localDate);
-        while (!timeRelation.equals("current")) {
-            if (timeRelation.equals("previous")) {
+    private void alignDatePickerToMonth(LocalDate localDate) {
+        YearMonth current = getYearMonthFromDatePicker();
+        YearMonth target = YearMonth.from(localDate);
+        while (!current.equals(target)) {
+            if (current.isBefore(target))
                 $(nextMonthBtn).click();
-            } else {
+            else
                 $(previousMonthBtn).click();
-            }
-            timeRelation = DateTimeUtils.getTimeRelation(getDatePickerValue(), localDate);
+            current = getYearMonthFromDatePicker();
         }
     }
 
-    private String getDatePickerValue() {
-        return $(datePickerCaption).shouldBe(visible).shouldNotHave(Condition.exactText("")).getText().trim();
+    private YearMonth getYearMonthFromDatePicker() {
+        // use YearMonth since the value of datePickerCaption is something like "July 2025"
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
+        String yearMonth = $(datePickerCaption).shouldBe(visible).shouldNotHave(Condition.exactText("")).getText().trim();
+        return YearMonth.parse(yearMonth, formatter);
     }
 }
