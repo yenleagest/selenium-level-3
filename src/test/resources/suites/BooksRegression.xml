@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="BooksRegression">
+    <listeners>
+        <listener class-name="listeners.TestListener"/>
+        <listener class-name="listeners.SuiteListener"/>
+    </listeners>
+    <test name="BooksRegression">
+        <classes>
+            <class name="testcases.books.SearchForBooksTest"/>
+        </classes>
+    </test>
+</suite>

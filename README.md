@@ -15,7 +15,7 @@ automated UI tests.
 - [x] Parallel/distributed testing
 - [x] Cross browsers testing: Chrome, Edge
 - [x] Selenium Grid/Shard
-- [ ] Test cases: VJ, Agoda, TBD (only 2/6 done)
+- [ ] Test cases: VJ, Agoda, TBD (4/7 - 3 Agoda tests and a Shadow DOM test)
 - [x] CI: Schedule test, send email notification result with summary
 
 ### User Cases
@@ -26,7 +26,7 @@ automated UI tests.
 - [x] Switch test environment: dev, stg (dev: agoda.com, stg: vj.com)
 - [ ] Wrap custom controls
 - [ ] Data driven testing: test data is in excel file
-- [ ] Working with Shadow DOM
+- [x] Working with Shadow DOM
 - [ ] Compare with another FW e.g. Playwright
 
 ---
