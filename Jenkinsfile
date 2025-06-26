@@ -23,10 +23,10 @@ pipeline {
                 choices: ['eager', 'none', 'normal'],
                 description: 'Set the page load strategy for the driver.')
         choice(name: 'ENVIRONMENT',
-                choices: ['https://www.agoda.com', 'https://www.vietjetair.com/en', 'https://www.vietjetair.com/ko', 'https://www.vietjetair.com/vi'],
+                choices: ['https://www.agoda.com', 'https://books-pwakit.appspot.com', 'https://www.vietjetair.com/en', 'https://www.vietjetair.com/ko', 'https://www.vietjetair.com/vi'],
                 description: 'Specify an environment to run tests.')
         choice(name: 'SUITE_NAME',
-                choices: ['AgodaRegression', 'VJRegression'],
+                choices: ['AgodaRegression', 'BooksRegression', 'VJRegression'],
                 description: 'Select the test suite to run.')
         choice(name: 'TEST_GROUP',
                 choices: ['smoke', 'regression'],
@@ -61,7 +61,7 @@ pipeline {
             steps {
                 script {
                     def inputBranch = params.GIT_BRANCH
-                    git branch: inputBranch, url: 'git@github.com:yenleagest/demo-selenium.git'
+                    git branch: inputBranch, url: 'git@github.com:yenleagest/selenium-level-3.git'
                 }
             }
         }

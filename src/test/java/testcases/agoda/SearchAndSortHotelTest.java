@@ -2,7 +2,6 @@ package testcases.agoda;
 
 import data.models.Hotel;
 import drivers.DriverUtils;
-import lombok.extern.slf4j.Slf4j;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.testng.asserts.SoftAssert;
@@ -16,7 +15,6 @@ import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
-@Slf4j
 public class SearchAndSortHotelTest extends TestBase {
 
     SoftAssert softAssert;

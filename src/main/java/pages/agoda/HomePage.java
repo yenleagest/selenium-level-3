@@ -230,6 +230,7 @@ public class HomePage {
         }
     }
 
+    @Step("Align date picker to the month of the given date: {localDate}")
     private void alignDatePickerToMonth(LocalDate localDate) {
         YearMonth current = getYearMonthFromDatePicker();
         YearMonth target = YearMonth.from(localDate);
@@ -242,6 +243,7 @@ public class HomePage {
         }
     }
 
+    @Step("Get the year and month from the date picker caption")
     private YearMonth getYearMonthFromDatePicker() {
         // use YearMonth since the value of datePickerCaption is something like "July 2025"
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);

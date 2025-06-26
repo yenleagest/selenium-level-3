@@ -19,7 +19,6 @@ public class TestBase {
         }
     }
 
-
     @AfterMethod(alwaysRun = true)
     public void afterMethod() {
         DriverUtils.quitDriver();
