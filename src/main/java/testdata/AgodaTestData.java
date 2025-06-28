@@ -2,8 +2,8 @@ package testdata;
 
 import data.enums.Facilities;
 import data.enums.SortBy;
-import data.models.Occupancy;
-import data.models.PriceFilter;
+import data.models.agoda.Occupancy;
+import data.models.agoda.PriceFilter;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

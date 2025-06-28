@@ -15,12 +15,12 @@ automated UI tests.
 - [x] Parallel/distributed testing
 - [x] Cross browsers testing: Chrome, Edge
 - [x] Selenium Grid/Shard
-- [ ] Test cases: VJ, Agoda, TBD (4/7 - 3 Agoda tests and a Shadow DOM test)
+- [ ] Test cases: VJ, Agoda, TBD (5/8 - 3 Agoda tests, a Shadow DOM test, and 1 VJ test)
 - [x] CI: Schedule test, send email notification result with summary
 
 ### User Cases
 - [ ] Content testing
-- [ ] Multiple languages testing
+- [x] Multiple languages testing
 - [x] Group tests by purposes: regression, smoke/sanity test
 - [x] Source control practice: branch
 - [x] Switch test environment: dev, stg (dev: agoda.com, stg: vj.com)
@@ -68,7 +68,7 @@ automated UI tests.
 │       │   └── testcases              # End-to-end test classes, grouped by environment (e.g., Agoda, VJ)
 │       └── resources
 │           ├── suites                 # TestNG suite XML files organized by environment (e.g., AgodaRegression.xml)
-│           └── testdata               # YAML files containing test case-specific data grouped by method
+│           ├── testdata               # YAML files containing test case-specific data grouped by method
 │           └── selenide.properties    # Selenide-specific configuration for browser behavior (e.g., size, timeout)
 ```
 

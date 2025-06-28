@@ -6,10 +6,16 @@ public class Constants {
     public static final String RESOURCE_TEST_DATA_PATH = getTestDataPath();
 
     private static String getTestDataPath() {
-        if (System.getProperty("selenide.baseUrl").contains("agoda")) {
+        String baseUrl = System.getProperty("selenide.baseUrl");
+        if (baseUrl.contains("agoda")) {
             return "src/test/resources/testdata/agoda/data.yml";
+        } else if (baseUrl.contains("vietjet")) {
+            if (baseUrl.endsWith("vi"))
+                return "src/test/resources/testdata/vj/vi-data.yml";
+            else
+                return "src/test/resources/testdata/vj/en-data.yml";
         } else {
-            return "src/test/resources/testdata/vj/data.yml";
+            throw new IllegalStateException("No test data found for: " + baseUrl);
         }
     }
 }

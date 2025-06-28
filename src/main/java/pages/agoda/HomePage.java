@@ -2,7 +2,7 @@ package pages.agoda;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
-import data.models.Occupancy;
+import data.models.agoda.Occupancy;
 import drivers.DriverUtils;
 import io.qameta.allure.Step;
 import lombok.AllArgsConstructor;
@@ -92,22 +92,22 @@ public class HomePage {
     }
 
     @Step("Close occupancy container")
-    public void confirmOccupancy() {
+    private void confirmOccupancy() {
         $(occContainer).click();
     }
 
     @Step("Get current occupancy")
-    public Occupancy getCurrentOccupancy() {
+    private Occupancy getCurrentOccupancy() {
         return new Occupancy(getRoomCount(), getAdultCount(), getChildCount());
     }
 
     @Step("Increase {occType} by 1")
-    public void increaseOcc(OccupancyType occType) {
+    private void increaseOcc(OccupancyType occType) {
         $(occType.plusButton()).click();
     }
 
     @Step("Decrease {occType} by 1")
-    public void decreaseOcc(OccupancyType occType) {
+    private void decreaseOcc(OccupancyType occType) {
         $(occType.minusButton()).click();
     }
 

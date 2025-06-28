@@ -1,15 +1,13 @@
-package data.models;
+package data.models.vj;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
-public class Occupancy {
+public class Passenger {
 
-    private int rooms;
     private int adults;
     private int children;
+    private int infants;
 }
