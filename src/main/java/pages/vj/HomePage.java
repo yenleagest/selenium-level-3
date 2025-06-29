@@ -35,17 +35,7 @@ public class HomePage {
     }
 
     private enum LocalizedText {
-        ACCEPT_COOKIE_BTN,
-        RETURN_BTN,
-        ONEWAY_BTN,
-        DEPARTURE_TEXTBOX,
-        DESTINATION_TEXTBOX,
-        PASSENGER_ADULTS,
-        PASSENGER_CHILDREN,
-        PASSENGER_INFANTS,
-        DEPARTURE_DATEPICKER,
-        RETURN_DATEPICKER,
-        SEARCH_BTN,
+        ACCEPT_COOKIE_BTN, RETURN_BTN, ONEWAY_BTN, DEPARTURE_TEXTBOX, DESTINATION_TEXTBOX, PASSENGER_ADULTS, PASSENGER_CHILDREN, PASSENGER_INFANTS, DEPARTURE_DATEPICKER, RETURN_DATEPICKER, SEARCH_BTN,
     }
 
     private final By suggestionPanel = By.className("scrollCustom");
@@ -69,8 +59,7 @@ public class HomePage {
         selectAirport(localizedText.get(LocalizedText.DEPARTURE_TEXTBOX), ticket.getDepartureFlight().getDepartureAirport());
         selectAirport(localizedText.get(LocalizedText.DESTINATION_TEXTBOX), ticket.getDepartureFlight().getDestinationAirport());
         selectDate(ticket.getDepartureFlight().getTakeOffDate());
-        if (ticket.getFlightType() == FlightType.RETURN)
-            selectDate(ticket.getReturnFlight().getTakeOffDate());
+        if (ticket.getFlightType() == FlightType.RETURN) selectDate(ticket.getReturnFlight().getTakeOffDate());
         submitPassenger(ticket.getDepartureFlight().getPassenger());
         search();
     }
@@ -118,7 +107,7 @@ public class HomePage {
     private void selectDate(LocalDate date) {
         alignDatePickerToMonth(date);
         String yearMonth = $(rdrMonthName).shouldBe(visible).shouldNotHave(exactText("")).getText().trim();
-        $x(selectableDate.formatted(yearMonth.toLowerCase(), date.getDayOfMonth())).click();
+        $x(selectableDate.formatted(VJ_LOCALE == VJLocale.VI ? yearMonth.toLowerCase() : yearMonth, date.getDayOfMonth())).click();
     }
 
     @Step("Submit passenger: {passenger}")
@@ -169,10 +158,8 @@ public class HomePage {
         YearMonth current = getYearMonthFromDatePicker();
         YearMonth target = YearMonth.from(localDate);
         while (!Objects.requireNonNull(current).equals(target)) {
-            if (current.isBefore(target))
-                $(nextMonthBtn).click();
-            else
-                $(previousMonthBtn).click();
+            if (current.isBefore(target)) $(nextMonthBtn).click();
+            else $(previousMonthBtn).click();
             current = getYearMonthFromDatePicker();
         }
     }
@@ -182,8 +169,7 @@ public class HomePage {
         String yearMonth = $(rdrMonthName).shouldBe(visible).shouldNotHave(exactText("")).getText().trim();
 
         DateTimeFormatter formatter;
-        if (VJ_LOCALE == VJLocale.EN)
-            formatter = ENGLISH_YEAR_MONTH_FORMATTER;
+        if (VJ_LOCALE == VJLocale.EN) formatter = ENGLISH_YEAR_MONTH_FORMATTER;
         else if (VJ_LOCALE == VJLocale.VI) {
             yearMonth = yearMonth.split(" ", 2)[1].trim();
             formatter = STANDARD_YEAR_MONTH_FORMATTER;

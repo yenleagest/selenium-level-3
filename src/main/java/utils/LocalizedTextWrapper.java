@@ -2,8 +2,9 @@ package utils;
 
 import java.util.Map;
 
-// wrapper for localized text loaded from YAML, allowing enum-based access.
-// allows textMap.get(PASSENGER_ADULTS) instead of using textMap.get(PASSENGER_ADULTS.name())
+// wrapper for localized text loaded from YAML, with enum-based access for type safety.
+// allows cleaner usage: textMap.get(LocalizedText.PASSENGER_ADULTS)
+// instead of: textMap.get(LocalizedText.PASSENGER_ADULTS.name())
 public class LocalizedTextWrapper<E extends Enum<E>> {
 
     private final Map<String, String> internal;
