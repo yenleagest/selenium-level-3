@@ -2,6 +2,8 @@ package pages.vj;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import data.enums.vj.FlightType;
+import data.enums.vj.VJLocale;
 import data.models.vj.Passenger;
 import data.models.vj.Ticket;
 import io.qameta.allure.Step;
@@ -13,22 +15,15 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Locale;
 import java.util.Objects;
 
 import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
-import static pages.vj.HomePage.LocalizedText.ACCEPT_COOKIE_BTN;
-import static pages.vj.HomePage.LocalizedText.DEPARTURE_TEXTBOX;
-import static pages.vj.HomePage.LocalizedText.DESTINATION_TEXTBOX;
-import static pages.vj.HomePage.LocalizedText.ONEWAY_BTN;
-import static pages.vj.HomePage.LocalizedText.PASSENGER_ADULTS;
-import static pages.vj.HomePage.LocalizedText.PASSENGER_CHILDREN;
-import static pages.vj.HomePage.LocalizedText.PASSENGER_INFANTS;
-import static pages.vj.HomePage.LocalizedText.RETURN_BTN;
-import static pages.vj.HomePage.LocalizedText.SEARCH_BTN;
+import static common.Constants.ENGLISH_YEAR_MONTH_FORMATTER;
+import static common.Constants.STANDARD_YEAR_MONTH_FORMATTER;
+import static common.Constants.VJ_LOCALE;
 
 @Slf4j
 public class HomePage {
@@ -39,7 +34,7 @@ public class HomePage {
         this.localizedText = new LocalizedTextWrapper<>(this.getClass().getSimpleName());
     }
 
-    protected enum LocalizedText {
+    private enum LocalizedText {
         ACCEPT_COOKIE_BTN,
         RETURN_BTN,
         ONEWAY_BTN,
@@ -57,44 +52,44 @@ public class HomePage {
     private final By rdrMonthName = By.className("rdrMonthName");
     private final By nextMonthBtn = By.className("rdrNextButton");
     private final By previousMonthBtn = By.className("rdrPprevButton");
+    private final By decreaseBtn = By.xpath("preceding-sibling::button");
+    private final By increaseBtn = By.xpath("following-sibling::button");
     private final String acceptCookieBtn = "//div[@aria-describedby='popup-dialog-description']//h5[text()='%s']";
     private final String returnRadioBtn = "//div[@role='radiogroup']//span[text()='%s']";
     private final String airportTextBox = "//label[text()='%s']/following-sibling::div/input";
     private final String airportOption = "//div[contains(@class, 'MuiExpansionPanelDetails')]//div[text()='%s']";
     private final String passengerValue = "//p[text()='%s']/following::span[contains(@class, 'MuiTypography')][1]";
-    private final String decreaseBtn = passengerValue.concat("/preceding-sibling::button");
-    private final String increaseBtn = passengerValue.concat("/following-sibling::button");
     private final String searchBtn = "//span[contains(@class, 'MuiButton')]/span[text()=\"%s\"]";
-    private final String selectedDate = "//div[translate(text(), 't', 'T') = '%s']/following-sibling::div//button[not(contains(@class, 'rdrDayDisabled'))]//span[text()='%s']";
+    private final String selectableDate = "//div[text() = '%s']/following-sibling::div//button[not(contains(@class, 'rdrDayDisabled'))]//span[text()='%s']";
 
     @Step("Search for tickets with following details: {ticket}")
     public void searchFlights(Ticket ticket) {
         acceptCookie();
-        selectFlightType(ticket.isReturnFlight());
-        searchAirport(localizedText.get(DEPARTURE_TEXTBOX), ticket.getFlightInfo().getDepartureAirport());
-        searchAirport(localizedText.get(DESTINATION_TEXTBOX), ticket.getFlightInfo().getDestinationAirport());
-        selectDate(ticket.getFlightInfo().getTakeOffDate());
-        if (ticket.isReturnFlight())
-            selectDate(ticket.getReturnDate());
-        submitPassenger(ticket.getFlightInfo().getPassenger());
+        selectFlightType(ticket.getFlightType());
+        selectAirport(localizedText.get(LocalizedText.DEPARTURE_TEXTBOX), ticket.getDepartureFlight().getDepartureAirport());
+        selectAirport(localizedText.get(LocalizedText.DESTINATION_TEXTBOX), ticket.getDepartureFlight().getDestinationAirport());
+        selectDate(ticket.getDepartureFlight().getTakeOffDate());
+        if (ticket.getFlightType() == FlightType.RETURN)
+            selectDate(ticket.getReturnFlight().getTakeOffDate());
+        submitPassenger(ticket.getDepartureFlight().getPassenger());
         search();
     }
 
     @Step("Accept cookie")
     private void acceptCookie() {
-        $x(acceptCookieBtn.formatted(localizedText.get(ACCEPT_COOKIE_BTN))).click();
+        $x(acceptCookieBtn.formatted(localizedText.get(LocalizedText.ACCEPT_COOKIE_BTN))).click();
     }
 
     @Step("Select return flight")
-    private void selectFlightType(boolean isReturnFlight) {
-        $x(returnRadioBtn.formatted(isReturnFlight ? localizedText.get(RETURN_BTN) : localizedText.get(ONEWAY_BTN))).click();
+    private void selectFlightType(FlightType flightType) {
+        $x(returnRadioBtn.formatted(flightType == FlightType.RETURN ? localizedText.get(LocalizedText.RETURN_BTN) : localizedText.get(LocalizedText.ONEWAY_BTN))).click();
     }
 
     @Step("Search for airport: {airport}")
-    private void searchAirport(String textLocator, String airport) {
+    private void selectAirport(String textLocator, String airport) {
         SelenideElement textbox = $x(airportTextBox.formatted(textLocator));
         openAirportDropdown(textbox);
-        enterAirportSearch(textLocator, airport);
+        searchAirport(textLocator, airport);
         String selectedAirport = selectAirportFromSuggestions(airport);
         waitForSelectionApplied(textbox, selectedAirport);
     }
@@ -104,7 +99,7 @@ public class HomePage {
         $(suggestionPanel).shouldBe(visible);
     }
 
-    private void enterAirportSearch(String textLocator, String airport) {
+    private void searchAirport(String textLocator, String airport) {
         $x(airportTextBox.formatted(textLocator)).setValue(airport);
     }
 
@@ -123,14 +118,14 @@ public class HomePage {
     private void selectDate(LocalDate date) {
         alignDatePickerToMonth(date);
         String yearMonth = $(rdrMonthName).shouldBe(visible).shouldNotHave(exactText("")).getText().trim();
-        $x(selectedDate.formatted(yearMonth, date.getDayOfMonth())).click();
+        $x(selectableDate.formatted(yearMonth.toLowerCase(), date.getDayOfMonth())).click();
     }
 
     @Step("Submit passenger: {passenger}")
     private void submitPassenger(Passenger passenger) {
-        submitPassengerAttribute(localizedText.get(PASSENGER_ADULTS), passenger.getAdults());
-        submitPassengerAttribute(localizedText.get(PASSENGER_CHILDREN), passenger.getChildren());
-        submitPassengerAttribute(localizedText.get(PASSENGER_INFANTS), passenger.getInfants());
+        submitPassengerAttribute(localizedText.get(LocalizedText.PASSENGER_ADULTS), passenger.getAdults());
+        submitPassengerAttribute(localizedText.get(LocalizedText.PASSENGER_CHILDREN), passenger.getChildren());
+        submitPassengerAttribute(localizedText.get(LocalizedText.PASSENGER_INFANTS), passenger.getInfants());
     }
 
     @Step("Submit number of {attributeText}: {count}")
@@ -141,7 +136,7 @@ public class HomePage {
 
     @Step("Hit search button")
     private void search() {
-        $x(searchBtn.formatted(localizedText.get(SEARCH_BTN))).click();
+        $x(searchBtn.formatted(localizedText.get(LocalizedText.SEARCH_BTN))).click();
     }
 
     @Step("Set {attributeText} to {target}")
@@ -158,11 +153,11 @@ public class HomePage {
     }
 
     private void incrPassenger(String attributeText) {
-        $x(increaseBtn.formatted(attributeText)).click();
+        $x(passengerValue.formatted(attributeText)).$(increaseBtn).click();
     }
 
     private void decrPassenger(String attributeText) {
-        $x(decreaseBtn.formatted(attributeText)).click();
+        $x(passengerValue.formatted(attributeText)).$(decreaseBtn).click();
     }
 
     private int getCurrentAttributeValue(String attributeText) {
@@ -185,17 +180,16 @@ public class HomePage {
     @Step("Get the year and month from the date picker caption")
     private YearMonth getYearMonthFromDatePicker() {
         String yearMonth = $(rdrMonthName).shouldBe(visible).shouldNotHave(exactText("")).getText().trim();
-        String baseUrl = System.getProperty("selenide.baseUrl");
 
         DateTimeFormatter formatter;
-        if (baseUrl.endsWith("/en"))
-            formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
-        else if (baseUrl.endsWith("/vi")) {
-            yearMonth = yearMonth.replace("Tháng", "").trim(); // new Locale("vi") only works with "Tháng Sáu 2025" not "Tháng 06 2025"
-            formatter = DateTimeFormatter.ofPattern("MM yyyy");
+        if (VJ_LOCALE == VJLocale.EN)
+            formatter = ENGLISH_YEAR_MONTH_FORMATTER;
+        else if (VJ_LOCALE == VJLocale.VI) {
+            yearMonth = yearMonth.split(" ", 2)[1].trim();
+            formatter = STANDARD_YEAR_MONTH_FORMATTER;
         } else
             // fallback to standard numeric format
-            formatter = DateTimeFormatter.ofPattern("MM yyyy");
+            formatter = STANDARD_YEAR_MONTH_FORMATTER;
 
         try {
             return YearMonth.parse(yearMonth, formatter);

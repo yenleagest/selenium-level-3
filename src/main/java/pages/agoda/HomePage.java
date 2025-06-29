@@ -10,11 +10,10 @@ import org.openqa.selenium.By;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
+import static common.Constants.ENGLISH_YEAR_MONTH_FORMATTER;
 import static pages.agoda.HomePage.OccupancyType.ADULTS;
 import static pages.agoda.HomePage.OccupancyType.CHILDREN;
 import static pages.agoda.HomePage.OccupancyType.ROOMS;
@@ -246,8 +245,7 @@ public class HomePage {
     @Step("Get the year and month from the date picker caption")
     private YearMonth getYearMonthFromDatePicker() {
         // use YearMonth since the value of datePickerCaption is something like "July 2025"
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
         String yearMonth = $(datePickerCaption).shouldBe(visible).shouldNotHave(Condition.exactText("")).getText().trim();
-        return YearMonth.parse(yearMonth, formatter);
+        return YearMonth.parse(yearMonth, ENGLISH_YEAR_MONTH_FORMATTER);
     }
 }

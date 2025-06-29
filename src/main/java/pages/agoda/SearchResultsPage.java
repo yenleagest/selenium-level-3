@@ -1,8 +1,8 @@
 package pages.agoda;
 
 import com.codeborne.selenide.SelenideElement;
-import data.enums.Facilities;
-import data.enums.SortBy;
+import data.enums.agoda.Facilities;
+import data.enums.agoda.SortBy;
 import data.models.agoda.Hotel;
 import data.models.agoda.PriceFilter;
 import drivers.DriverUtils;

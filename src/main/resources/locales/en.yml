@@ -1,25 +1,25 @@
 HomePage:
-  ACCEPT_COOKIE_BTN: "Accept"
-  RETURN_BTN: "Return"
-  ONEWAY_BTN: "One-way"
-  DEPARTURE_TEXTBOX: "From"
-  DESTINATION_TEXTBOX: "To"
-  PASSENGER_ADULTS: "Adults"
-  PASSENGER_CHILDREN: "Childrens"
-  PASSENGER_INFANTS: "Infants"
-  DEPARTURE_DATEPICKER: "Departure date"
-  RETURN_DATEPICKER: "Return date"
-  SEARCH_BTN: "Let's go"
+  ACCEPT_COOKIE_BTN: Accept
+  RETURN_BTN: Return
+  ONEWAY_BTN: One-way
+  DEPARTURE_TEXTBOX: From
+  DESTINATION_TEXTBOX: To
+  PASSENGER_ADULTS: Adults
+  PASSENGER_CHILDREN: Childrens
+  PASSENGER_INFANTS: Infants
+  DEPARTURE_DATEPICKER: Departure date
+  RETURN_DATEPICKER: Return date
+  SEARCH_BTN: Let's go
 SelectFlightOptionsPage:
-  CONTINUE_BTN: "Continue"
-  DEPARTURE_LABEL: "From"
-  DESTINATION_LABEL: "To"
-  RESERVATION_DEPARTURE_LABEL: "Departure flight"
-  RESERVATION_RETURN_LABEL: "Return flight"
-  PRICE_LABEL: "Price"
-  TAXES_AND_FEES_LABEL: "Taxes and fees"
+  CONTINUE_BTN: Continue
+  DEPARTURE_LABEL: From
+  DESTINATION_LABEL: To
+  RESERVATION_DEPARTURE_LABEL: Departure flight
+  RESERVATION_RETURN_LABEL: Return flight
+  PRICE_LABEL: Price
+  TAXES_AND_FEES_LABEL: Taxes and fees
 PassengerInformationPage:
-  RESERVATION_DEPARTURE_LABEL: "Departure flight"
-  RESERVATION_RETURN_LABEL: "Return flight"
-  PRICE_LABEL: "Price"
+  RESERVATION_DEPARTURE_LABEL: Departure flight
+  RESERVATION_RETURN_LABEL: Return flight
+  PRICE_LABEL: Price
 

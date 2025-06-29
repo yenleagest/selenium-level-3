@@ -1,15 +1,14 @@
 package data.models.vj;
 
+import data.enums.vj.FlightType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
 public class Ticket {
 
-    boolean isReturnFlight;
-    private LocalDate returnDate;
-    private FlightInfo flightInfo;
+    private FlightType flightType;
+    private FlightInfo departureFlight;
+    private FlightInfo returnFlight;
 }

@@ -1,7 +1,7 @@
 package testdata;
 
-import data.enums.Facilities;
-import data.enums.SortBy;
+import data.enums.agoda.Facilities;
+import data.enums.agoda.SortBy;
 import data.models.agoda.Occupancy;
 import data.models.agoda.PriceFilter;
 import lombok.AllArgsConstructor;

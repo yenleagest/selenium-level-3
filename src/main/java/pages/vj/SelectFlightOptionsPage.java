@@ -4,6 +4,8 @@ import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import data.enums.vj.FlightDirection;
+import data.enums.vj.VJLocale;
 import data.models.vj.FlightInfo;
 import data.models.vj.Passenger;
 import io.qameta.allure.Step;
@@ -13,21 +15,18 @@ import utils.LocalizedTextWrapper;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+import java.util.Comparator;
 import java.util.Locale;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 import static com.codeborne.selenide.Selenide.$x;
-import static pages.vj.SelectFlightOptionsPage.LocalizedText.DEPARTURE_LABEL;
-import static pages.vj.SelectFlightOptionsPage.LocalizedText.DESTINATION_LABEL;
-import static pages.vj.SelectFlightOptionsPage.LocalizedText.CONTINUE_BTN;
-import static pages.vj.SelectFlightOptionsPage.LocalizedText.PRICE_LABEL;
-import static pages.vj.SelectFlightOptionsPage.LocalizedText.RESERVATION_DEPARTURE_LABEL;
-import static pages.vj.SelectFlightOptionsPage.LocalizedText.RESERVATION_RETURN_LABEL;
-
+import static common.Constants.ENGLISH_DATE_FORMATTER;
+import static common.Constants.VJ_LOCALE;
 
 @Slf4j
 public class SelectFlightOptionsPage extends HomePage {
@@ -39,13 +38,7 @@ public class SelectFlightOptionsPage extends HomePage {
     }
 
     protected enum LocalizedText {
-        CONTINUE_BTN,
-        DEPARTURE_LABEL,
-        DESTINATION_LABEL,
-        RESERVATION_DEPARTURE_LABEL,
-        RESERVATION_RETURN_LABEL,
-        PRICE_LABEL,
-        TAXES_AND_FEES_LABEL,
+        CONTINUE_BTN, DEPARTURE_LABEL, DESTINATION_LABEL, RESERVATION_DEPARTURE_LABEL, RESERVATION_RETURN_LABEL, PRICE_LABEL, TAXES_AND_FEES_LABEL,
     }
 
     private final By closeAdsBtn = By.cssSelector("[aria-label='close']");
@@ -67,27 +60,21 @@ public class SelectFlightOptionsPage extends HomePage {
     @Step("Get flight info")
     public FlightInfo getFlightInfo() {
         ElementsCollection collection = $$(flightInfo).shouldHave(CollectionCondition.size(3));
-        /* the text elements looks like below:
+        /* example flight info elements:
          * 1st element: Return | 2 Adults, 1 Childrens, 1 Infants
          * 2nd element: From Ho Chi Minh (SGN)
          * 3rd element: To Ha Noi (HAN)
          */
-        FlightInfo flightInfo = new FlightInfo(
-                getCurrency(),
-                getAirport(collection, true),
-                getAirport(collection, false),
-                getTakeOffDate(),
-                getPassengerInfo(collection)
-        );
+        FlightInfo flightInfo = new FlightInfo(getCurrency(), getAirport(collection, FlightDirection.DEPARTURE), getAirport(collection, FlightDirection.RETURN), getTakeOffDate(), getPassengerInfo(collection));
         log.info("FlightInfo info: {}", flightInfo);
         return flightInfo;
     }
 
-    @Step("Select cheapest flight")
-    public void selectCheapestFlight(boolean isReturnFlight) {
+    @Step("Select cheapest {direction} flight")
+    public void selectCheapestFlight(FlightDirection direction) {
         String cheapestPrice = getCheapestPrice();
         selectCheapestFlight(cheapestPrice);
-        hitContinueButton(isReturnFlight);
+        hitContinueButton(direction);
     }
 
     private void selectCheapestFlight(String price) {
@@ -95,14 +82,15 @@ public class SelectFlightOptionsPage extends HomePage {
         $(flightDetailsPanel).shouldBe(visible);
     }
 
-    public void hitContinueButton(boolean isReturnFlight) {
-        $x(continueBtn.formatted(localizedText.get(CONTINUE_BTN))).shouldBe(visible).click();
-        waitForReservationInfoDisplayed(isReturnFlight);
+    public void hitContinueButton(FlightDirection direction) {
+        $x(continueBtn.formatted(localizedText.get(LocalizedText.CONTINUE_BTN))).shouldBe(visible).click();
+        waitForReservationInfoDisplayed(direction);
     }
 
-    private void waitForReservationInfoDisplayed(boolean isReturnFlight) {
-        $x(reservationInfo.formatted(localizedText.get(isReturnFlight ? RESERVATION_RETURN_LABEL : RESERVATION_DEPARTURE_LABEL), localizedText.get(PRICE_LABEL))).shouldBe(visible);
-        $x(reservationInfo.formatted(localizedText.get(isReturnFlight ? RESERVATION_RETURN_LABEL : RESERVATION_DEPARTURE_LABEL), localizedText.get(PRICE_LABEL))).shouldBe(visible);
+    private void waitForReservationInfoDisplayed(FlightDirection direction) {
+        LocalizedText directionLabel = direction == FlightDirection.RETURN ? LocalizedText.RESERVATION_RETURN_LABEL : LocalizedText.RESERVATION_DEPARTURE_LABEL;
+        $x(reservationInfo.formatted(localizedText.get(directionLabel), localizedText.get(LocalizedText.PRICE_LABEL))).shouldBe(visible);
+        $x(reservationInfo.formatted(localizedText.get(directionLabel), localizedText.get(LocalizedText.PRICE_LABEL))).shouldBe(visible);
     }
 
     @Step("Get currency value")
@@ -112,26 +100,15 @@ public class SelectFlightOptionsPage extends HomePage {
 
     @Step("Get passenger info")
     private Passenger getPassengerInfo(ElementsCollection flightInfo) {
-        String[] passengerInfo = flightInfo.get(0).shouldNotHave(Condition.exactText("")).getText().split("\\|")[1].trim().split(",");
-        int adults = 0;
-        int children = 0;
-        int infants = 0;
-        if (passengerInfo.length == 1)
-            adults = Integer.parseInt(passengerInfo[0].split(" ")[0]);
-        else if (passengerInfo.length == 2)
-            children = Integer.parseInt(passengerInfo[1].split(" ")[0]);
-        else if (passengerInfo.length == 3)
-            infants = Integer.parseInt(passengerInfo[2].split(" ")[0]);
-        else
-            throw new IllegalStateException("Unexpected passenger info format: " + flightInfo.get(0).getText());
-        return new Passenger(adults, children, infants);
+        return Passenger.getPassengerInfo(flightInfo.get(0).shouldNotHave(Condition.exactText("")).getText());
     }
 
-    @Step("Get airport name")
-    private String getAirport(ElementsCollection flightInfo, boolean isDeparture) {
-        String fullText = flightInfo.get(isDeparture ? 1 : 2).shouldNotHave(Condition.exactText("")).getText();
+    @Step("Get {direction} airport name")
+    private String getAirport(ElementsCollection flightInfo, FlightDirection direction) {
+        String fullText = flightInfo.get(direction == FlightDirection.DEPARTURE ? 1 : 2).shouldNotHave(Condition.exactText("")).getText();
         // remove the known prefix
-        String withoutPrefix = fullText.replaceFirst(Pattern.quote(localizedText.get(isDeparture ? DEPARTURE_LABEL : DESTINATION_LABEL)), "").trim();
+        LocalizedText prefix = direction == FlightDirection.DEPARTURE ? LocalizedText.DEPARTURE_LABEL : LocalizedText.DESTINATION_LABEL;
+        String withoutPrefix = fullText.replaceFirst(Pattern.quote(localizedText.get(prefix)), "").trim();
         // remove the trailing airport code in parentheses
         return withoutPrefix.replaceFirst("\\s*\\([^)]*\\)$", "").trim();
     }
@@ -139,37 +116,21 @@ public class SelectFlightOptionsPage extends HomePage {
     @Step("Get take off date")
     private LocalDate getTakeOffDate() {
         String text = $(takeOffDate).shouldNotHave(Condition.exactText("")).getText().trim();
-        String baseUrl = System.getProperty("selenide.baseUrl");
 
-        if (baseUrl.endsWith("/en")) {
+        if (VJ_LOCALE == VJLocale.EN) {
             String cleanedWithYear = "%s %s".formatted(text.replaceAll("(\\d+)(st|nd|rd|th)", "$1"), LocalDate.now().getYear());
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMMM d yyyy", Locale.ENGLISH);
-            return LocalDate.parse(cleanedWithYear, formatter);
-        } else if (baseUrl.endsWith("/vi")) {
-            Pattern pattern = Pattern.compile("(\\d{1,2})\\s+tháng\\s+(\\d{1,2})");
-            Matcher matcher = pattern.matcher(text);
+            return LocalDate.parse(cleanedWithYear, ENGLISH_DATE_FORMATTER);
+        } else if (VJ_LOCALE == VJLocale.VI) {
+            // build a formatter: "d 'tháng' M" with default year = current year
+            DateTimeFormatter formatter = new DateTimeFormatterBuilder().appendPattern("d 'tháng' M").parseDefaulting(ChronoField.YEAR, LocalDate.now().getYear()).toFormatter(Locale.forLanguageTag("vi"));
 
-            if (matcher.matches()) {
-                int day = Integer.parseInt(matcher.group(1));
-                int month = Integer.parseInt(matcher.group(2));
-                int year = LocalDate.now().getYear();
-                return LocalDate.of(year, month, day);
-            }
+            return LocalDate.parse(text, formatter);
         } else {
             throw new IllegalStateException("Unsupported take off data format: " + text);
         }
-        return null;
     }
 
     private String getCheapestPrice() {
-        return $$(flightsPrice).shouldHave(CollectionCondition.sizeGreaterThan(0))
-                .stream()
-                .map(SelenideElement::getText) // get the price string like "4,090"
-                .map(text -> text.replace(",", "")) // remove comma to compare → "4090"
-                .mapToInt(Integer::parseInt).min() // get the lowest price
-                .stream()
-                .mapToObj(min -> String.format("%,d", min))  // format back to "4,090" with comma
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("No prices found"));
+        return $$(flightsPrice).shouldHave(CollectionCondition.sizeGreaterThan(0)).stream().min(Comparator.comparingInt(e -> Integer.parseInt(e.getText().replace(",", "")))).map(SelenideElement::getText).orElseThrow(() -> new RuntimeException("No prices found"));
     }
 }
