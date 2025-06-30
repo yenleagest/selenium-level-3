@@ -1,6 +1,6 @@
 package testcases.agoda;
 
-import data.models.Hotel;
+import data.models.agoda.Hotel;
 import drivers.DriverUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

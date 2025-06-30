@@ -6,6 +6,7 @@
     </listeners>
     <test name="VJRegression">
         <classes>
+            <class name="testcases.vj.SearchTicketsOnASpecificDayTest"/>
         </classes>
     </test>
 </suite>

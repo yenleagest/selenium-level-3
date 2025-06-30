@@ -1,4 +1,4 @@
-package data.models;
+package data.models.agoda;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Occupancy {
+public class PriceFilter {
 
-    private int rooms;
-    private int adults;
-    private int children;
+    private int min;
+    private int max;
 }

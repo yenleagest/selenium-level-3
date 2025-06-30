@@ -2,7 +2,7 @@ package pages.agoda;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
-import data.models.Hotel;
+import data.models.agoda.Hotel;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
