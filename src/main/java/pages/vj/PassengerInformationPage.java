@@ -59,7 +59,7 @@ public class PassengerInformationPage extends HomePage {
     }
 
     private Passenger getPassengerInfo() {
-        return Passenger.getPassengerInfo($(passengerInfo).getText());
+        return Passenger.fromString($(passengerInfo).getText());
     }
 
     @Step("Get airport name")

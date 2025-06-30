@@ -13,7 +13,7 @@ public class Passenger {
     private int infants;
 
     @Step("Get passenger info")
-    public static Passenger getPassengerInfo(String text) {
+    public static Passenger fromString(String text) {
         String[] passengerInfo = text.split("\\|")[1].trim().split(",");
         int adults;
         int children = 0;

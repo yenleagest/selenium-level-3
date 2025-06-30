@@ -53,10 +53,10 @@ public class SearchTicketsOnASpecificDayTest extends TestBase {
         homePage.searchFlights(ticket);
         SelectFlightOptionsPage.closeAds();
         softAssert.assertEquals(SelectFlightOptionsPage.getFlightInfo(), departureFlight);
-        SelectFlightOptionsPage.selectCheapestFlight(FlightDirection.DEPARTURE);
+        SelectFlightOptionsPage.selectFlightByPrice(FlightDirection.DEPARTURE);
 
         softAssert.assertEquals(SelectFlightOptionsPage.getFlightInfo(), returnFlight);
-        SelectFlightOptionsPage.selectCheapestFlight(FlightDirection.RETURN);
+        SelectFlightOptionsPage.selectFlightByPrice(FlightDirection.RETURN);
 
         softAssert.assertEquals(passengerInformationPage.getReservationInfo(FlightDirection.DEPARTURE), departureFlight);
         softAssert.assertEquals(passengerInformationPage.getReservationInfo(FlightDirection.RETURN), returnFlight);

@@ -71,13 +71,13 @@ public class SelectFlightOptionsPage extends HomePage {
     }
 
     @Step("Select cheapest {direction} flight")
-    public void selectCheapestFlight(FlightDirection direction) {
+    public void selectFlightByPrice(FlightDirection direction) {
         String cheapestPrice = getCheapestPrice();
-        selectCheapestFlight(cheapestPrice);
+        selectFlightByPrice(cheapestPrice);
         hitContinueButton(direction);
     }
 
-    private void selectCheapestFlight(String price) {
+    private void selectFlightByPrice(String price) {
         $x(flightByPrice.formatted(price)).shouldBe(visible).click();
         $(flightDetailsPanel).shouldBe(visible);
     }
@@ -100,7 +100,7 @@ public class SelectFlightOptionsPage extends HomePage {
 
     @Step("Get passenger info")
     private Passenger getPassengerInfo(ElementsCollection flightInfo) {
-        return Passenger.getPassengerInfo(flightInfo.get(0).shouldNotHave(Condition.exactText("")).getText());
+        return Passenger.fromString(flightInfo.get(0).shouldNotHave(Condition.exactText("")).getText());
     }
 
     @Step("Get {direction} airport name")
