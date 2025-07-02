@@ -15,7 +15,7 @@ automated UI tests.
 - [x] Parallel/distributed testing
 - [x] Cross browsers testing: Chrome, Edge
 - [x] Selenium Grid/Shard
-- [ ] Test cases: VJ, Agoda, TBD (5/8 - 3 Agoda tests, a Shadow DOM test, and 1 VJ test)
+- [ ] Test cases: VJ, Agoda, TBD (6/8 - 3 Agoda tests, a Shadow DOM test, and 2 VJ tests)
 - [x] CI: Schedule test, send email notification result with summary
 
 ### User Cases

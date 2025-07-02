@@ -2,6 +2,7 @@ package pages.vj;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import data.enums.vj.FareOption;
 import data.enums.vj.FlightType;
 import data.enums.vj.VJLocale;
 import data.models.vj.Passenger;
@@ -35,7 +36,7 @@ public class HomePage {
     }
 
     private enum LocalizedText {
-        ACCEPT_COOKIE_BTN, RETURN_BTN, ONEWAY_BTN, DEPARTURE_TEXTBOX, DESTINATION_TEXTBOX, PASSENGER_ADULTS, PASSENGER_CHILDREN, PASSENGER_INFANTS, DEPARTURE_DATEPICKER, RETURN_DATEPICKER, SEARCH_BTN,
+        ACCEPT_COOKIE_BTN, RETURN_BTN, ONEWAY_BTN, DEPARTURE_TEXTBOX, DESTINATION_TEXTBOX, DEPARTURE_DATEPICKER, RETURN_DATEPICKER, PASSENGER_ADULTS, PASSENGER_CHILDREN, PASSENGER_INFANTS, FARE_CHECKBOX, SEARCH_BTN,
     }
 
     private final By suggestionPanel = By.className("scrollCustom");
@@ -49,18 +50,24 @@ public class HomePage {
     private final String airportTextBox = "//label[text()='%s']/following-sibling::div/input";
     private final String airportOption = "//div[contains(@class, 'MuiExpansionPanelDetails')]//div[text()='%s']";
     private final String passengerValue = "//p[text()='%s']/following::span[contains(@class, 'MuiTypography')][1]";
+    private final String fareCheckbox = "//div[contains(@class,'MuiPaper-rounded')]//h3[text()='%s']/preceding-sibling::span";
     private final String searchBtn = "//span[contains(@class, 'MuiButton')]/span[text()=\"%s\"]";
     private final String selectableDate = "//div[text() = '%s']/following-sibling::div//button[not(contains(@class, 'rdrDayDisabled'))]//span[text()='%s']";
 
     @Step("Search for tickets with following details: {ticket}")
     public void searchFlights(Ticket ticket) {
+        LocalDate departureDate = Objects.requireNonNullElse(ticket.getDepartureFlight().getTakeOffDate(), LocalDate.now().plusDays(1));
         acceptCookie();
         selectFlightType(ticket.getFlightType());
         selectAirport(localizedText.get(LocalizedText.DEPARTURE_TEXTBOX), ticket.getDepartureFlight().getDepartureAirport());
         selectAirport(localizedText.get(LocalizedText.DESTINATION_TEXTBOX), ticket.getDepartureFlight().getDestinationAirport());
-        selectDate(ticket.getDepartureFlight().getTakeOffDate());
-        if (ticket.getFlightType() == FlightType.RETURN) selectDate(ticket.getReturnFlight().getTakeOffDate());
+        selectDate(departureDate);
+        if (ticket.getFlightType() == FlightType.RETURN) {
+            LocalDate returnDate = Objects.requireNonNullElse(ticket.getReturnFlight().getTakeOffDate(), departureDate.plusDays(1));
+            selectDate(returnDate);
+        }
         submitPassenger(ticket.getDepartureFlight().getPassenger());
+        if (ticket.getFareOption() == FareOption.LOWEST) selectFindLowestFareOption();
         search();
     }
 
@@ -71,7 +78,8 @@ public class HomePage {
 
     @Step("Select return flight")
     private void selectFlightType(FlightType flightType) {
-        $x(returnRadioBtn.formatted(flightType == FlightType.RETURN ? localizedText.get(LocalizedText.RETURN_BTN) : localizedText.get(LocalizedText.ONEWAY_BTN))).click();
+        $x(returnRadioBtn.formatted(flightType == FlightType.RETURN ? localizedText.get(LocalizedText.RETURN_BTN) : localizedText.get(
+                LocalizedText.ONEWAY_BTN))).click();
     }
 
     @Step("Search for airport: {airport}")
@@ -107,7 +115,10 @@ public class HomePage {
     private void selectDate(LocalDate date) {
         alignDatePickerToMonth(date);
         String yearMonth = $(rdrMonthName).shouldBe(visible).shouldNotHave(exactText("")).getText().trim();
-        $x(selectableDate.formatted(VJ_LOCALE == VJLocale.VI ? yearMonth.toLowerCase() : yearMonth, date.getDayOfMonth())).click();
+        $x(selectableDate.formatted(
+                VJ_LOCALE == VJLocale.VI ? yearMonth.toLowerCase() : yearMonth,
+                date.getDayOfMonth()
+        )).click();
     }
 
     @Step("Submit passenger: {passenger}")
@@ -121,6 +132,11 @@ public class HomePage {
     private void submitPassengerAttribute(String attributeText, int count) {
         int currentAdults = getCurrentAttributeValue(attributeText);
         adjustUntilEqual(attributeText, currentAdults, count);
+    }
+
+    @Step("Select 'Find lowest fare' option")
+    private void selectFindLowestFareOption() {
+        $x(fareCheckbox.formatted(localizedText.get(LocalizedText.FARE_CHECKBOX))).click();
     }
 
     @Step("Hit search button")
@@ -150,7 +166,10 @@ public class HomePage {
     }
 
     private int getCurrentAttributeValue(String attributeText) {
-        return Integer.parseInt($x(passengerValue.formatted(attributeText)).shouldNotHave(exactText("")).getText().trim());
+        return Integer.parseInt($x(passengerValue.formatted(attributeText))
+                                        .shouldNotHave(exactText(""))
+                                        .getText()
+                                        .trim());
     }
 
     @Step("Align date picker to the month of the given date: {localDate}")

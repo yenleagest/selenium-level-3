@@ -1,3 +1,7 @@
 testMethod: searchTicketsOnASpecificDay
 departureAirport: Tp. Hồ Chí Minh
 destinationAirport: Hà Nội
+---
+testMethod: searchCheapestTicketsInNextThreeMonths
+departureAirport: Tp. Hồ Chí Minh
+destinationAirport: Hà Nội

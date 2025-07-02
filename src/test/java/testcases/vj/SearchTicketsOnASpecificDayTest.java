@@ -1,5 +1,6 @@
 package testcases.vj;
 
+import data.enums.vj.FareOption;
 import data.enums.vj.FlightDirection;
 import data.enums.vj.FlightType;
 import data.models.vj.FlightInfo;
@@ -20,7 +21,7 @@ import java.time.LocalDate;
 public class SearchTicketsOnASpecificDayTest extends TestBase {
 
     HomePage homePage;
-    SelectFlightOptionsPage SelectFlightOptionsPage;
+    SelectFlightOptionsPage selectFlightOptionsPage;
     PassengerInformationPage passengerInformationPage;
     SoftAssert softAssert;
     Ticket ticket;
@@ -34,7 +35,7 @@ public class SearchTicketsOnASpecificDayTest extends TestBase {
     public void setUp() {
         DriverUtils.openURL();
         homePage = new HomePage();
-        SelectFlightOptionsPage = new SelectFlightOptionsPage();
+        selectFlightOptionsPage = new SelectFlightOptionsPage();
         passengerInformationPage = new PassengerInformationPage();
         softAssert = new SoftAssert();
 
@@ -48,15 +49,15 @@ public class SearchTicketsOnASpecificDayTest extends TestBase {
 
         departureFlight = new FlightInfo("VND", data.getDepartureAirport(), data.getDestinationAirport(), departureDate, passenger);
         returnFlight = new FlightInfo("VND", data.getDestinationAirport(), data.getDepartureAirport(), returnDate, passenger);
-        ticket = new Ticket(FlightType.RETURN, departureFlight, returnFlight);
+        ticket = new Ticket(FlightType.RETURN, departureFlight, returnFlight, FareOption.ANY);
 
         homePage.searchFlights(ticket);
-        SelectFlightOptionsPage.closeAds();
-        softAssert.assertEquals(SelectFlightOptionsPage.getFlightInfo(), departureFlight);
-        SelectFlightOptionsPage.selectFlightByPrice(FlightDirection.DEPARTURE);
+        selectFlightOptionsPage.closeAds();
+        softAssert.assertEquals(selectFlightOptionsPage.getFlightInfo(), departureFlight);
+        selectFlightOptionsPage.selectFlightByPrice(FlightDirection.DEPARTURE);
 
-        softAssert.assertEquals(SelectFlightOptionsPage.getFlightInfo(), returnFlight);
-        SelectFlightOptionsPage.selectFlightByPrice(FlightDirection.RETURN);
+        softAssert.assertEquals(selectFlightOptionsPage.getFlightInfo(), returnFlight);
+        selectFlightOptionsPage.selectFlightByPrice(FlightDirection.RETURN);
 
         softAssert.assertEquals(passengerInformationPage.getReservationInfo(FlightDirection.DEPARTURE), departureFlight);
         softAssert.assertEquals(passengerInformationPage.getReservationInfo(FlightDirection.RETURN), returnFlight);

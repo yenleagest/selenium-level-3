@@ -4,12 +4,17 @@ HomePage:
   ONEWAY_BTN: Một chiều
   DEPARTURE_TEXTBOX: Điểm khởi hành
   DESTINATION_TEXTBOX: Điểm đến
+  DEPARTURE_DATEPICKER: Ngày đi
+  RETURN_DATEPICKER: Ngày về
   PASSENGER_ADULTS: Người lớn
   PASSENGER_CHILDREN: Trẻ em
   PASSENGER_INFANTS: Em bé
-  DEPARTURE_DATEPICKER: Ngày đi
-  RETURN_DATEPICKER: Ngày về
+  FARE_CHECKBOX: Tìm vé rẻ nhất
   SEARCH_BTN: Tìm chuyến bay
+SelectFlightFarePage:
+  FARE_LABEL: Chọn giá vé
+  DEPARTURE_LABEL: Chuyến đi
+  RETURN_LABEL: Chuyến về
 SelectFlightOptionsPage:
   CONTINUE_BTN: Đi tiếp
   DEPARTURE_LABEL: Điểm khởi hành

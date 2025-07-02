@@ -1,3 +1,7 @@
 testMethod: searchTicketsOnASpecificDay
 departureAirport: Ho Chi Minh
 destinationAirport: Ha Noi
+---
+testMethod: searchCheapestTicketsInNextThreeMonths
+departureAirport: Ho Chi Minh
+destinationAirport: Ha Noi
