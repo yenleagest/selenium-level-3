@@ -82,7 +82,7 @@ public class SelectFlightOptionsPage extends HomePage {
         $(flightDetailsPanel).shouldBe(visible);
     }
 
-    public void hitContinueButton(FlightDirection direction) {
+    private void hitContinueButton(FlightDirection direction) {
         $x(continueBtn.formatted(localizedText.get(LocalizedText.CONTINUE_BTN))).shouldBe(visible).click();
         waitForReservationInfoDisplayed(direction);
     }
@@ -122,7 +122,10 @@ public class SelectFlightOptionsPage extends HomePage {
             return LocalDate.parse(cleanedWithYear, ENGLISH_DATE_FORMATTER);
         } else if (VJ_LOCALE == VJLocale.VI) {
             // build a formatter: "d 'tháng' M" with default year = current year
-            DateTimeFormatter formatter = new DateTimeFormatterBuilder().appendPattern("d 'tháng' M").parseDefaulting(ChronoField.YEAR, LocalDate.now().getYear()).toFormatter(Locale.forLanguageTag("vi"));
+            DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                    .appendPattern("d 'tháng' M")
+                    .parseDefaulting(ChronoField.YEAR, LocalDate.now().getYear())
+                    .toFormatter(Locale.forLanguageTag("vi"));
 
             return LocalDate.parse(text, formatter);
         } else {
@@ -131,6 +134,11 @@ public class SelectFlightOptionsPage extends HomePage {
     }
 
     private String getCheapestPrice() {
-        return $$(flightsPrice).shouldHave(CollectionCondition.sizeGreaterThan(0)).stream().min(Comparator.comparingInt(e -> Integer.parseInt(e.getText().replace(",", "")))).map(SelenideElement::getText).orElseThrow(() -> new RuntimeException("No prices found"));
+        return $$(flightsPrice)
+                .shouldHave(CollectionCondition.sizeGreaterThan(0))
+                .stream()
+                .min(Comparator.comparingInt(e -> Integer.parseInt(e.getText().replace(",", ""))))
+                .map(SelenideElement::getText)
+                .orElseThrow(() -> new RuntimeException("No prices found"));
     }
 }

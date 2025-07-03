@@ -15,6 +15,7 @@ public class Constants {
     public static DateTimeFormatter ENGLISH_YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
     public static DateTimeFormatter ENGLISH_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM d yyyy", Locale.ENGLISH);
     public static DateTimeFormatter STANDARD_YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern("MM yyyy");
+    public static DateTimeFormatter YEAR_MONTH_FORMATTER_WITH_FLASH = DateTimeFormatter.ofPattern("MM/yyyy");
 
 
     private static String getTestDataPath() {

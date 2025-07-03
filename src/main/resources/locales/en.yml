@@ -4,12 +4,17 @@ HomePage:
   ONEWAY_BTN: One-way
   DEPARTURE_TEXTBOX: From
   DESTINATION_TEXTBOX: To
+  DEPARTURE_DATEPICKER: Departure date
+  RETURN_DATEPICKER: Return date
   PASSENGER_ADULTS: Adults
   PASSENGER_CHILDREN: Childrens
   PASSENGER_INFANTS: Infants
-  DEPARTURE_DATEPICKER: Departure date
-  RETURN_DATEPICKER: Return date
+  FARE_CHECKBOX: Find lowest fare
   SEARCH_BTN: Let's go
+SelectFlightFarePage:
+  FARE_LABEL: Select fare
+  DEPARTURE_LABEL: Departure flight
+  RETURN_LABEL: Return flight
 SelectFlightOptionsPage:
   CONTINUE_BTN: Continue
   DEPARTURE_LABEL: From
