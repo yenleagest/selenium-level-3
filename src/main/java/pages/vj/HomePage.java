@@ -2,9 +2,10 @@ package pages.vj;
 
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import controls.DatePicker;
+import data.enums.Environment;
 import data.enums.vj.FareOption;
 import data.enums.vj.FlightType;
-import data.enums.vj.VJLocale;
 import data.models.vj.Passenger;
 import data.models.vj.Ticket;
 import io.qameta.allure.Step;
@@ -13,18 +14,13 @@ import org.openqa.selenium.By;
 import utils.LocalizedTextWrapper;
 
 import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
 import static com.codeborne.selenide.Condition.exactText;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
-import static common.Constants.ENGLISH_YEAR_MONTH_FORMATTER;
-import static common.Constants.STANDARD_YEAR_MONTH_FORMATTER;
-import static common.Constants.VJ_LOCALE;
+import static common.Constants.ENVIRONMENT;
 
 @Slf4j
 public class HomePage {
@@ -113,12 +109,14 @@ public class HomePage {
 
     @Step("Select date: {date}")
     private void selectDate(LocalDate date) {
-        alignDatePickerToMonth(date);
         String yearMonth = $(rdrMonthName).shouldBe(visible).shouldNotHave(exactText("")).getText().trim();
-        $x(selectableDate.formatted(
-                VJ_LOCALE == VJLocale.VI ? yearMonth.toLowerCase() : yearMonth,
-                date.getDayOfMonth()
-        )).click();
+        DatePicker datePicker = new DatePicker(
+                $(rdrMonthName),
+                $(nextMonthBtn),
+                $(previousMonthBtn),
+                $x(selectableDate.formatted(ENVIRONMENT == Environment.VJ_VI ? yearMonth.toLowerCase() : yearMonth, date.getDayOfMonth()))
+        );
+        datePicker.alignDatePickerToMonth(date).selectDate(date);
     }
 
     @Step("Submit passenger: {passenger}")
@@ -170,37 +168,5 @@ public class HomePage {
                                         .shouldNotHave(exactText(""))
                                         .getText()
                                         .trim());
-    }
-
-    @Step("Align date picker to the month of the given date: {localDate}")
-    private void alignDatePickerToMonth(LocalDate localDate) {
-        YearMonth current = getYearMonthFromDatePicker();
-        YearMonth target = YearMonth.from(localDate);
-        while (!Objects.requireNonNull(current).equals(target)) {
-            if (current.isBefore(target)) $(nextMonthBtn).click();
-            else $(previousMonthBtn).click();
-            current = getYearMonthFromDatePicker();
-        }
-    }
-
-    @Step("Get the year and month from the date picker caption")
-    private YearMonth getYearMonthFromDatePicker() {
-        String yearMonth = $(rdrMonthName).shouldBe(visible).shouldNotHave(exactText("")).getText().trim();
-
-        DateTimeFormatter formatter;
-        if (VJ_LOCALE == VJLocale.EN) formatter = ENGLISH_YEAR_MONTH_FORMATTER;
-        else if (VJ_LOCALE == VJLocale.VI) {
-            yearMonth = yearMonth.split(" ", 2)[1].trim();
-            formatter = STANDARD_YEAR_MONTH_FORMATTER;
-        } else
-            // fallback to standard numeric format
-            formatter = STANDARD_YEAR_MONTH_FORMATTER;
-
-        try {
-            return YearMonth.parse(yearMonth, formatter);
-        } catch (DateTimeParseException e) {
-            log.error("Failed to parse year and month from text: '{}'. Error: {}", yearMonth, e.getMessage());
-            return null;
-        }
     }
 }

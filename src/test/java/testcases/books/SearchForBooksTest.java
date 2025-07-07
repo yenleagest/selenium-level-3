@@ -1,5 +1,6 @@
 package testcases.books;
 
+import data.enums.books.LocatorStrategy;
 import drivers.DriverUtils;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -23,13 +24,13 @@ public class SearchForBooksTest extends TestBase {
         softAssert = new SoftAssert();
     }
 
-    @Test(groups = {"smoke", "regression"}, description = "Search for books successfully")
-    public void searchForBooks() {
+    @Test(dataProvider = "locatorStrategy", groups = {"smoke", "regression"}, description = "Search for books successfully")
+    public void searchForBooks(LocatorStrategy strategy) {
         keyword = "playwright";
 
-        homePage.searchForBook(keyword);
+        homePage.searchForBook(strategy, keyword);
 
-        softAssert.assertTrue(searchResultsPage.doAllResultsContainKeyword(keyword));
+        softAssert.assertTrue(searchResultsPage.doAllResultsContainKeyword(strategy, keyword));
 
         softAssert.assertAll();
     }

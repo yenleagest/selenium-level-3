@@ -24,7 +24,7 @@ automated UI tests.
 - [x] Group tests by purposes: regression, smoke/sanity test
 - [x] Source control practice: branch
 - [x] Switch test environment: dev, stg (dev: agoda.com, stg: vj.com)
-- [ ] Wrap custom controls
+- [x] Wrap custom controls
 - [ ] Data driven testing: test data is in excel file
 - [x] Working with Shadow DOM
 - [ ] Compare with another FW e.g. Playwright
