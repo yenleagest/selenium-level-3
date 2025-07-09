@@ -148,7 +148,7 @@ public class HomePage {
                 $(previousMonthBtn),
                 $(selectableDate.formatted(date))
         );
-        datePicker.alignDatePickerToMonth(date).selectDate(date);
+        datePicker.selectDate(date);
     }
 
     @Step("Close app download ads if displayed")

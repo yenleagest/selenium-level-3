@@ -36,7 +36,7 @@ public class DatePicker {
         selectableDate.click();
     }
 
-    public DatePicker alignDatePickerToMonth(LocalDate targetDate) {
+    private void alignDatePickerToMonth(LocalDate targetDate) {
         YearMonth current = getCurrentMonth();
         YearMonth target = YearMonth.from(targetDate);
         while (!Objects.requireNonNull(current).equals(target)) {
@@ -44,7 +44,6 @@ public class DatePicker {
             else previousMonthBtn.click();
             current = getCurrentMonth();
         }
-        return this;
     }
 
     private YearMonth getCurrentMonth() {

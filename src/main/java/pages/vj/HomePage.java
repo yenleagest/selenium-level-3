@@ -116,7 +116,7 @@ public class HomePage {
                 $(previousMonthBtn),
                 $x(selectableDate.formatted(ENVIRONMENT == Environment.VJ_VI ? yearMonth.toLowerCase() : yearMonth, date.getDayOfMonth()))
         );
-        datePicker.alignDatePickerToMonth(date).selectDate(date);
+        datePicker.selectDate(date);
     }
 
     @Step("Submit passenger: {passenger}")
