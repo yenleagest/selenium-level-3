@@ -16,7 +16,7 @@ public class TestBase {
     @DataProvider(name = "locatorStrategy")
     public Object[][] getLocatorStrategy() {
         return new Object[][] {
-//            { LocatorStrategy.SELENIDE },
+            { LocatorStrategy.SELENIDE },
             { LocatorStrategy.SELENIUM }
         };
     }
