@@ -5,6 +5,7 @@ import data.enums.books.LocatorStrategy;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import utils.ShadowDomUtils;
 
 import java.util.ArrayList;
@@ -78,11 +79,11 @@ public class SearchResultsPage extends HomePage {
     }
 
     private void waitForResultsToLoad() {
-        wait.until(driver -> ShadowDomUtils
+        WebElement bookExplore = ShadowDomUtils
                 .start()
                 .through("book-app")
-                .get("book-explore")
-                .getAttribute("active") != null);
+                .get("book-explore");
+        wait.until(ExpectedConditions.domAttributeToBe(bookExplore, "active", ""));
     }
 
     private List<WebElement> getAllResults() {
@@ -94,10 +95,11 @@ public class SearchResultsPage extends HomePage {
     }
 
     private void waitForResultToLoad(WebElement element) {
-        wait.until(driver -> ShadowDomUtils
+        WebElement placeholder = ShadowDomUtils
                 .start()
                 .through(element)
-                .get(".placeholder").getAttribute("fadeout") != null);
+                .get(".placeholder");
+        wait.until(ExpectedConditions.domAttributeToBe(placeholder, "fadeout", ""));
     }
 
     private String getTitle(WebElement element) {
