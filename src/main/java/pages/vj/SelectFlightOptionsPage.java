@@ -4,8 +4,8 @@ import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import data.enums.Environment;
 import data.enums.vj.FlightDirection;
-import data.enums.vj.VJLocale;
 import data.models.vj.FlightInfo;
 import data.models.vj.Passenger;
 import io.qameta.allure.Step;
@@ -26,7 +26,7 @@ import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 import static com.codeborne.selenide.Selenide.$x;
 import static common.Constants.ENGLISH_DATE_FORMATTER;
-import static common.Constants.VJ_LOCALE;
+import static common.Constants.ENVIRONMENT;
 
 @Slf4j
 public class SelectFlightOptionsPage extends HomePage {
@@ -117,10 +117,10 @@ public class SelectFlightOptionsPage extends HomePage {
     private LocalDate getTakeOffDate() {
         String text = $(takeOffDate).shouldNotHave(Condition.exactText("")).getText().trim();
 
-        if (VJ_LOCALE == VJLocale.EN) {
+        if (ENVIRONMENT == Environment.VJ_EN) {
             String cleanedWithYear = "%s %s".formatted(text.replaceAll("(\\d+)(st|nd|rd|th)", "$1"), LocalDate.now().getYear());
             return LocalDate.parse(cleanedWithYear, ENGLISH_DATE_FORMATTER);
-        } else if (VJ_LOCALE == VJLocale.VI) {
+        } else if (ENVIRONMENT == Environment.VJ_VI) {
             // build a formatter: "d 'tháng' M" with default year = current year
             DateTimeFormatter formatter = new DateTimeFormatterBuilder()
                     .appendPattern("d 'tháng' M")
