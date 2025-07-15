@@ -24,7 +24,6 @@ public class SearchResultsPage extends HomePage {
 
     private final By minPrice = By.cssSelector("#SideBarLocationFilters #price_box_0");
     private final By maxPrice = By.cssSelector("#SideBarLocationFilters #price_box_1");
-    private final By currencySymbol = By.className("PriceFilter-searchbox__pricesymbol");
     // dynamic locators
     private final String sortBy = "[data-element-name='%s']";
     private final String rating = "#filter-menu-StarRatingWithLuxury ~ ul [data-element-value='%d']";

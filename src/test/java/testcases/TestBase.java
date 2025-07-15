@@ -1,5 +1,6 @@
 package testcases;
 
+import data.enums.books.LocatorStrategy;
 import drivers.DriverUtils;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.DataProvider;
@@ -11,6 +12,14 @@ import java.lang.reflect.Method;
 
 
 public class TestBase {
+
+    @DataProvider(name = "locatorStrategy")
+    public Object[][] getLocatorStrategy() {
+        return new Object[][] {
+            { LocatorStrategy.SELENIDE },
+            { LocatorStrategy.SELENIUM }
+        };
+    }
 
     @DataProvider(name = "dataByMethod")
     public Object[][] getAgodaTestData(Method method) {

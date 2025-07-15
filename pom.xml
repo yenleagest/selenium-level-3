@@ -12,6 +12,13 @@
         <aspectj.version>1.9.20.1</aspectj.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
     <!-- Ensure correct versions of all the dependencies are used -->
     <dependencyManagement>
         <dependencies>
@@ -26,6 +33,11 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.yenleagest</groupId>
+            <artifactId>shadow-utils</artifactId>
+            <version>v1.0.1-alpha</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/io.qameta.allure/allure-testng -->
         <dependency>
             <groupId>io.qameta.allure</groupId>

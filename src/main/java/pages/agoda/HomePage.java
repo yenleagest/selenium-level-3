@@ -1,7 +1,7 @@
 package pages.agoda;
 
-import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.SelenideElement;
+import controls.DatePicker;
 import data.models.agoda.Occupancy;
 import drivers.DriverUtils;
 import io.qameta.allure.Step;
@@ -9,11 +9,9 @@ import lombok.AllArgsConstructor;
 import org.openqa.selenium.By;
 
 import java.time.LocalDate;
-import java.time.YearMonth;
 
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
-import static common.Constants.ENGLISH_YEAR_MONTH_FORMATTER;
 import static pages.agoda.HomePage.OccupancyType.ADULTS;
 import static pages.agoda.HomePage.OccupancyType.CHILDREN;
 import static pages.agoda.HomePage.OccupancyType.ROOMS;
@@ -35,7 +33,7 @@ public class HomePage {
 
     // dynamic locators
     private final String searchSuggestion = "[data-text='%s']";
-    private final String selectedDate = "[data-selenium-date='%s']";
+    private final String selectableDate = "[data-selenium-date='%s']";
 
 
     private int getRoomCount() {
@@ -144,9 +142,13 @@ public class HomePage {
 
     @Step("Select date: {date}")
     private void selectDate(LocalDate date) {
-        alignDatePickerToMonth(date);
-        SelenideElement selectedDate = $(this.selectedDate.formatted(date));
-        selectedDate.click();
+        DatePicker datePicker = new DatePicker(
+                $(datePickerCaption),
+                $(nextMonthBtn),
+                $(previousMonthBtn),
+                $(selectableDate.formatted(date))
+        );
+        datePicker.selectDate(date);
     }
 
     @Step("Close app download ads if displayed")
@@ -227,25 +229,5 @@ public class HomePage {
             $(iframeCloseBtn).click();
             DriverUtils.switchToDefaultContent();
         }
-    }
-
-    @Step("Align date picker to the month of the given date: {localDate}")
-    private void alignDatePickerToMonth(LocalDate localDate) {
-        YearMonth current = getYearMonthFromDatePicker();
-        YearMonth target = YearMonth.from(localDate);
-        while (!current.equals(target)) {
-            if (current.isBefore(target))
-                $(nextMonthBtn).click();
-            else
-                $(previousMonthBtn).click();
-            current = getYearMonthFromDatePicker();
-        }
-    }
-
-    @Step("Get the year and month from the date picker caption")
-    private YearMonth getYearMonthFromDatePicker() {
-        // use YearMonth since the value of datePickerCaption is something like "July 2025"
-        String yearMonth = $(datePickerCaption).shouldBe(visible).shouldNotHave(Condition.exactText("")).getText().trim();
-        return YearMonth.parse(yearMonth, ENGLISH_YEAR_MONTH_FORMATTER);
     }
 }

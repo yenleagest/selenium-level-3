@@ -1,16 +1,18 @@
 package common;
 
 import com.codeborne.selenide.Configuration;
-import data.enums.vj.VJLocale;
+import data.enums.Environment;
 
+import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 public class Constants {
+    public static final Duration TIMEOUT_SECONDS = Duration.ofSeconds(10);
     public static final int MAX_RETRY = Math.min(Integer.parseInt(System.getProperty("maxRetry", "3")), 3);
     public static final String RETRY_STRATEGY = System.getProperty("retryStrategy", "post-suite");
     public static final String RESOURCE_TEST_DATA_PATH = getTestDataPath();
-    public static final VJLocale VJ_LOCALE = getVJLocale();
+    public static final Environment ENVIRONMENT = Environment.getEnvironment(Configuration.baseUrl);
     public static DateTimeFormatter EUROPEAN_DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     public static DateTimeFormatter ENGLISH_YEAR_MONTH_FORMATTER = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.ENGLISH);
     public static DateTimeFormatter ENGLISH_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMMM d yyyy", Locale.ENGLISH);
@@ -28,18 +30,7 @@ public class Constants {
             else
                 return "src/test/resources/testdata/vj/en-data.yml";
         } else {
-            throw new IllegalStateException("No test data found for: " + baseUrl);
-        }
-    }
-
-    private static VJLocale getVJLocale() {
-        String baseUrl = Configuration.baseUrl;
-        if (baseUrl.endsWith("/en")) {
-            return VJLocale.EN;
-        } else if (baseUrl.endsWith("/vi")) {
-            return VJLocale.VI;
-        } else {
-            throw new IllegalStateException("Unsupported VietJet locale for: " + baseUrl);
+            return null;
         }
     }
 }
