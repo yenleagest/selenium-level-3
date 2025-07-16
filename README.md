@@ -9,17 +9,19 @@ automated UI tests.
 ## 🗳️ Project Progress
 
 ### Outcomes
+
 - [x] Selenide FW ([selenide.org](https://selenide.org/)): automation/test framework
 - [x] Reports: HTML, Allure Report, Report Portal
 - [x] Test retry: test failed ⇒ retry (1, 2)
 - [x] Parallel/distributed testing
 - [x] Cross browsers testing: Chrome, Edge
 - [x] Selenium Grid/Shard
-- [ ] Test cases: VJ, Agoda, TBD (6/8 - 3 Agoda tests, a Shadow DOM test, and 2 VJ tests)
+- [ ] Test cases: VJ, Agoda, TBD (7/8 - 3 Agoda tests, a Shadow DOM test, 2 VJ tests, and a content testing test)
 - [x] CI: Schedule test, send email notification result with summary
 
 ### User Cases
-- [ ] Content testing
+
+- [x] Content testing
 - [x] Multiple languages testing
 - [x] Group tests by purposes: regression, smoke/sanity test
 - [x] Source control practice: branch
