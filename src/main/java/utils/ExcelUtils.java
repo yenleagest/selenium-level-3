@@ -38,14 +38,12 @@ public class ExcelUtils {
                 throw new IllegalStateException("Excel file is empty or missing data rows.");
             }
 
+            HashMap<String, Integer> columnIndexMap = extractColumnIndices(sheet);
+
             for (Row row : sheet) {
                 if (row.getRowNum() == 0) continue; // skip header row
 
-                String title = getCellValue(row.getCell(0, MissingCellPolicy.RETURN_BLANK_AS_NULL));
-                String ageRange = getCellValue(row.getCell(1, MissingCellPolicy.RETURN_BLANK_AS_NULL));
-                String price = getCellValue(row.getCell(2, MissingCellPolicy.RETURN_BLANK_AS_NULL));
-
-                GameInfo gameInfo = new GameInfo(title, ageRange, price);
+                GameInfo gameInfo = parseRow(row, columnIndexMap);
                 gameMap.put(row.getRowNum() + 1, gameInfo); // 1-based index
             }
 
@@ -54,6 +52,23 @@ public class ExcelUtils {
         }
 
         return gameMap;
+    }
+
+    private static HashMap<String, Integer> extractColumnIndices(Sheet sheet) {
+        Row headerRow = sheet.getRow(0);
+        HashMap<String, Integer> columnIndexMap = new HashMap<>();
+        for (Cell cell : headerRow) {
+            String header = getCellValue(cell).toLowerCase();
+            columnIndexMap.put(header, cell.getColumnIndex());
+        }
+        return columnIndexMap;
+    }
+
+    private static GameInfo parseRow(Row row, HashMap<String, Integer> columnIndexMap) {
+        String title = getCellValue(row.getCell(columnIndexMap.get("title"), MissingCellPolicy.RETURN_BLANK_AS_NULL));
+        String ageRange = getCellValue(row.getCell(columnIndexMap.get("age"), MissingCellPolicy.RETURN_BLANK_AS_NULL));
+        String price = getCellValue(row.getCell(columnIndexMap.get("price"), MissingCellPolicy.RETURN_BLANK_AS_NULL));
+        return new GameInfo(title, ageRange, price);
     }
 
     private static String getCellValue(Cell cell) {
