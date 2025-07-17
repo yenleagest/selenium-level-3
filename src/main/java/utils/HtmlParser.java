@@ -9,7 +9,6 @@ import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.IntStream;
 
 @Slf4j
 public class HtmlParser {
@@ -29,53 +28,28 @@ public class HtmlParser {
     public static List<GameInfo> fromHttpClient(int total) {
         List<String> metadata = LeapFrogHttpClient.getAll(total);
         List<GameInfo> result = new ArrayList<>();
+        int index = 1;
 
         for (String html : metadata) {
-            List<String> titles = extractTitles(html);
-            List<String> ages = extractAgeRanges(html);
-            List<String> prices = extractPrices(html);
-
-            ensureDataSizeMatch(titles, ages, prices);
-            List<GameInfo> games = mapToGameInfo(titles, ages, prices);
-
+            List<GameInfo> games = extractGameInfos(html);
             result.addAll(games);
         }
-
         return result;
     }
 
-    private static void ensureDataSizeMatch(List<String> titles, List<String> ages, List<String> prices) {
-        if (titles.size() != ages.size() || titles.size() != prices.size()) {
-            throw new IllegalStateException("Mismatched sizes in extracted data - Titles: %d, Ages: %d, Prices: %d"
-                                                    .formatted(titles.size(), ages.size(), prices.size()));
-        }
-    }
-
-    private static List<GameInfo> mapToGameInfo(List<String> titles, List<String> ages, List<String> prices) {
-        return IntStream.range(0, titles.size())
-                        .mapToObj(i -> new GameInfo(titles.get(i), ages.get(i), prices.get(i)))
-                        .toList();
-    }
-
-    private static List<String> extractTitles(String html) {
-        return fromHtml(html, "p.heading");
-    }
-
-    private static List<String> extractAgeRanges(String html) {
-        return fromHtml(html, "p.ageDisplay");
-    }
-
-    private static List<String> extractPrices(String html) {
-        return fromHtml(html, "span.single.price:not(.strike)").stream()
-                                                               .map(price -> price.contains(":") ? price.split(":", 2)[1].trim() : price)
-                                                               .toList();
-    }
-
-    private static List<String> fromHtml(String html, String cssLocator) {
+    private static List<GameInfo> extractGameInfos(String html) {
         Document doc = Jsoup.parse(html);
-        Elements elements = doc.select(cssLocator);
-        return elements.stream()
-                       .map(e -> e.text().trim())
-                       .toList();
+        Elements items = doc.select(".resultList .catalog-product");
+
+        return items.stream()
+                    .map(item -> {
+                        String title = item.select("p.heading").text().trim();
+                        String age = item.select("p.ageDisplay").text().trim();
+                        String priceRaw = item.select("span.single.price:not(.strike)").text().trim();
+                        String price = priceRaw.contains(":") ? priceRaw.split(":", 2)[1].trim() : priceRaw;
+
+                        return new GameInfo(title, age, price);
+                    })
+                    .toList();
     }
 }

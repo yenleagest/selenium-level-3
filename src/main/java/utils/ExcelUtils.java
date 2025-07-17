@@ -72,6 +72,6 @@ public class ExcelUtils {
     }
 
     private static String getCellValue(Cell cell) {
-        return (cell == null) ? "" : cell.getStringCellValue().trim();
+        return cell.getStringCellValue().trim();
     }
 }
