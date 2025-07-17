@@ -28,7 +28,6 @@ public class HtmlParser {
     public static List<GameInfo> fromHttpClient(int total) {
         List<String> metadata = LeapFrogHttpClient.getAll(total);
         List<GameInfo> result = new ArrayList<>();
-        int index = 1;
 
         for (String html : metadata) {
             List<GameInfo> games = extractGameInfos(html);
