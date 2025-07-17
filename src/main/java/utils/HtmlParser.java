@@ -23,7 +23,6 @@ public class HtmlParser {
      *
      * @param total the number of pages to fetch and parse
      * @return a list of {@link GameInfo} objects aggregated from all pages
-     * @throws IllegalStateException if the extracted lists of titles, ages, and prices do not match in size
      */
     public static List<GameInfo> fromHttpClient(int total) {
         List<String> metadata = LeapFrogHttpClient.getAll(total);

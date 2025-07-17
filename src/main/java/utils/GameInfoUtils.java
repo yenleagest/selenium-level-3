@@ -11,22 +11,21 @@ import java.util.stream.Collectors;
 public class GameInfoUtils {
 
     /**
-     * utility class for processing and logging LeapFrog game information
+     * utility class for processing and logging leapfrog game information
      * <p>
      * this class provides static methods to:
      * <ul>
-     *     <li>build a map of game information from HTML pages</li>
-     *     <li>compare actual UI data with expected Excel data</li>
-     *     <li>log mismatches and missing entries to Allure reports</li>
+     *     <li>build a hashmap of game information from html pages, keyed by title</li>
+     *     <li>compare actual ui data with expected excel data</li>
+     *     <li>log mismatches and missing entries to allure reports</li>
      * </ul>
      * <p>
-     * it is designed to assist in content testing workflows by handling the parsing,
-     * mapping, and verification of {@link GameInfo} objects
-     * across multiple sources.
+     * it is designed to help in content testing workflows by handling the parsing,
+     * mapping, and verification of {@link GameInfo} objects across multiple sources.
      */
 
-    public static HashMap<String, GameInfo> buildUIGameMap(int numberOfPages) {
-        List<GameInfo> uiInfo = HtmlParser.fromHttpClient(numberOfPages);
+    public static HashMap<String, GameInfo> buildUIGameMap(int total) {
+        List<GameInfo> uiInfo = HtmlParser.fromHttpClient(total);
         return uiInfo.stream().collect(Collectors.toMap(
                 GameInfo::getTitle, Function.identity(), (a, b) -> {
                     throw new IllegalStateException("Duplicated games found: %s and %s".formatted(a, b));
