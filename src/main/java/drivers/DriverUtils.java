@@ -11,7 +11,7 @@ import static com.codeborne.selenide.WebDriverRunner.getWebDriver;
 public class DriverUtils {
 
     public static synchronized void openURL() {
-        open("/");
+        open("");
     }
 
     public static synchronized void quitDriver() {

@@ -39,4 +39,5 @@ build/
 .idea/
 logs/
 allure-results/
+allure-report/
 test-output/
