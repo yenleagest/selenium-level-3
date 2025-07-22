@@ -6,9 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import reports.AllureManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class HtmlParser {
@@ -22,20 +24,24 @@ public class HtmlParser {
      * </p>
      *
      * @param total the number of pages to fetch and parse
-     * @return a list of {@link GameInfo} objects aggregated from all pages
+     * @return a list of {@link GameInfo} objects with page index set
      */
     public static List<GameInfo> fromHttpClient(int total) {
-        List<String> metadata = LeapFrogHttpClient.getAll(total);
+        Map<Integer, String> metadata = LeapFrogHttpClient.getAll(total);
         List<GameInfo> result = new ArrayList<>();
 
-        for (String html : metadata) {
-            List<GameInfo> games = extractGameInfos(html);
+        for (Map.Entry<Integer, String> entry : metadata.entrySet()) {
+            int pageNum = entry.getKey();
+            String html = entry.getValue();
+            List<GameInfo> games = extractGameInfos(pageNum, html);
+            games.forEach(g -> g.setIndex(pageNum));
+            AllureManager.saveLog("Page %d found %d games".formatted(pageNum, games.size()), String.join("\n", games.stream().map(Object::toString).toList()));
             result.addAll(games);
         }
         return result;
     }
 
-    private static List<GameInfo> extractGameInfos(String html) {
+    private static List<GameInfo> extractGameInfos(int pageNum, String html) {
         Document doc = Jsoup.parse(html);
         Elements items = doc.select(".resultList .catalog-product");
 
@@ -46,7 +52,7 @@ public class HtmlParser {
                         String priceRaw = item.select("span.single.price:not(.strike)").text().trim();
                         String price = priceRaw.contains(":") ? priceRaw.split(":", 2)[1].trim() : priceRaw;
 
-                        return new GameInfo(title, age, price);
+                        return new GameInfo(pageNum, title, age, price);
                     })
                     .toList();
     }

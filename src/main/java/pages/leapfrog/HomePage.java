@@ -5,16 +5,18 @@ import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import utils.ExcelUtils;
+import utils.GameInfoUtils.GameMismatch;
+import utils.HtmlParser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.codeborne.selenide.Selenide.$;
-import static utils.GameInfoUtils.buildUIGameMap;
-import static utils.GameInfoUtils.compareGameInfo;
+import static utils.GameInfoUtils.findMismatchedGames;
+import static utils.GameInfoUtils.findMissingGames;
 import static utils.GameInfoUtils.logAndReportMismatch;
 import static utils.GameInfoUtils.logAndReportMissing;
+import static utils.GameInfoUtils.mapGameInfoByTitle;
 
 @Slf4j
 public class HomePage {
@@ -27,16 +29,16 @@ public class HomePage {
     }
 
     @Step("Verify that game info on the UI matches expected data from Excel file")
-    public boolean doesGameInfoMatch(int numberOfPages) {
-        HashMap<Integer, GameInfo> expected = ExcelUtils.getLeapFrogGameInfo();
-        HashMap<String, GameInfo> actualMap = buildUIGameMap(numberOfPages);
+    public boolean doesGameInfoMatch(int total) {
+        List<GameInfo> expected = ExcelUtils.getLeapFrogGameInfo();
+        List<GameInfo> actual = HtmlParser.fromHttpClient(total);
+        Map<String, GameInfo> actualMap = mapGameInfoByTitle(actual);
 
-        List<GameInfo> missing = new ArrayList<>();
-        HashMap<String, GameInfo> mismatch = new HashMap<>();
-        compareGameInfo(expected, actualMap, missing, mismatch);
+        List<GameInfo> missing = findMissingGames(expected, actualMap);
+        List<GameMismatch> mismatch = findMismatchedGames(expected, actualMap);
 
-        logAndReportMissing(missing, expected);
-        logAndReportMismatch(mismatch, expected);
+        logAndReportMissing(missing);
+        logAndReportMismatch(mismatch);
 
         return missing.isEmpty() && mismatch.isEmpty();
     }

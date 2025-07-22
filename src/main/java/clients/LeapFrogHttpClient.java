@@ -7,10 +7,12 @@ import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.ClassicHttpRequest;
 import org.apache.hc.core5.http.io.HttpClientResponseHandler;
 import org.apache.hc.core5.http.io.entity.EntityUtils;
+import reports.AllureManager;
 
-import java.util.ArrayList;
+import java.time.LocalTime;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -28,32 +30,38 @@ public class LeapFrogHttpClient {
      * </p>
      *
      * @param total the number of pages to fetch
-     * @return a thread-safe list of HTML page responses (as Strings), ordered by submission index
+     * @return a thread-safe map of page numbers to HTML page responses (as Strings)
      */
-    public static List<String> getAll(int total) {
+    public static Map<Integer, String> getAll(int total) {
         ExecutorService executor = newFixedThreadPool(total);
-        List<String> results = Collections.synchronizedList(new ArrayList<>());
-
-        submitTasks(executor, results, total);
+        Map<Integer, String> results = submitTasks(executor, total);
         shutdownExecutor(executor);
-
         return results;
     }
 
-    private static void submitTasks(ExecutorService executor, List<String> results, int total) {
+    private static Map<Integer, String> submitTasks(ExecutorService executor, int total) {
+        Map<Integer, String> resultMap = Collections.synchronizedMap(new HashMap<>());
+
         for (int i = 1; i <= total; i++) {
             final int pageNum = i;
             executor.submit(() -> {
                 String url = LEAP_FROG_PRODUCT_PAGE.formatted(pageNum);
+                String startTimestamp = LocalTime.now().toString();
+                long startTime = System.currentTimeMillis();
+                log.info("[{}] Start fetching page {}", startTimestamp, pageNum);
                 try {
                     String result = get(url);
-                    results.add(result);
+                    resultMap.put(pageNum, result);
+                    String endTimestamp = LocalTime.now().toString();
+                    log.info("[{}] Finished fetching page {} (duration: {} s)", endTimestamp, pageNum, String.format("%.2f", (System.currentTimeMillis() - startTime) / 1000.0));
                 } catch (Exception e) {
                     log.error("Failed to fetch page {}: {}", pageNum, e.getMessage());
-                    results.add("");
+                    resultMap.put(pageNum, "");
                 }
             });
         }
+
+        return resultMap;
     }
 
     private static void shutdownExecutor(ExecutorService executor) {
@@ -73,11 +81,15 @@ public class LeapFrogHttpClient {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             ClassicHttpRequest request = new HttpGet(url);
 
-            HttpClientResponseHandler<String> handler = response ->
-                    EntityUtils.toString(response.getEntity());
+            HttpClientResponseHandler<String> handler = response -> {
+                String body = EntityUtils.toString(response.getEntity());
+                if (response.getCode() != 200)
+                    AllureManager.saveLog("Non-200 response for: %s".formatted(url), body);
+
+                return body;
+            };
 
             return client.execute(request, handler);
-
         } catch (Exception e) {
             throw new RuntimeException("GET request failed: " + e.getMessage(), e);
         }

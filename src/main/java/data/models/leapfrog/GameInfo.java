@@ -7,6 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class GameInfo {
 
+    private int index; // 1-based index for Excel row or page number
     private String title;
     private String ageRange;
     private String price;
