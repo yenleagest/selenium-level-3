@@ -8,6 +8,10 @@ import java.util.stream.Collectors;
 
 public class BooksUtils {
 
+    /**
+     * utility class for processing and filtering book titles based on keyword presence.
+     * formats and logs matching and non-matching results to the console and Allure report.
+     */
 
     public static List<String> filterResults(List<String> titles, String keyword) {
         AllureManager.saveLog("Extracted titles:", formatResults(titles));
