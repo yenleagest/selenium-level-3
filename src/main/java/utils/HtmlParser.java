@@ -48,7 +48,7 @@ public class HtmlParser {
         return items.stream()
                     .map(item -> {
                         String title = item.select("p.heading").text().trim();
-                        String age = item.select("p.ageDisplay").text().trim();
+                        String age = item.select("p.ageDisplay").text().replaceAll("\\s*-\\s*", "-").trim(); // to remove the space before the dash in 'Ages 4 -7 years'
                         String priceRaw = item.select("span.single.price:not(.strike)").text().trim();
                         String price = priceRaw.contains(":") ? priceRaw.split(":", 2)[1].trim() : priceRaw;
 

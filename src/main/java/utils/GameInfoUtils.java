@@ -3,7 +3,6 @@ package utils;
 import data.models.leapfrog.GameInfo;
 import reports.AllureManager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +48,7 @@ public class GameInfoUtils {
 
     public static List<GameMismatch> findMismatchedGames(List<GameInfo> expected, Map<String, GameInfo> actualMap) {
         return expected.stream()
-                       .filter(e -> actualMap.containsKey(e.getTitle()) && isMismatched(e, actualMap.get(e.getTitle())))
+                       .filter(e -> actualMap.containsKey(e.getTitle()) && !e.equals(actualMap.get(e.getTitle())))
                        .map(e -> new GameMismatch(e, actualMap.get(e.getTitle())))
                        .toList();
     }
@@ -98,7 +97,7 @@ public class GameInfoUtils {
                                                        actual.getTitle(),
                                                        actual.getAgeRange(),
                                                        actual.getPrice(),
-                                                       getMismatchDetails(expected, actual)
+                                                       expected.getMismatchDetails(actual)
                                                ).trim();
                                            })
                                            .collect(Collectors.joining("\n\n"));
@@ -107,21 +106,5 @@ public class GameInfoUtils {
                 "These %d games were displayed on the UI but have mismatched info:".formatted(mismatches.size()),
                 mismatchDetails
         );
-    }
-
-    private static boolean isMismatched(GameInfo expected, GameInfo actual) {
-        if (!expected.getTitle().equals(actual.getTitle())) return true;
-        if (!expected.getAgeRange().equals(actual.getAgeRange())) return true;
-        if (!expected.getPrice().equals(actual.getPrice())) return true;
-        return false;
-    }
-
-    private static String getMismatchDetails(GameInfo expected, GameInfo actual) {
-        List<String> lines = new ArrayList<>();
-        if (!expected.getAgeRange().equals(actual.getAgeRange()))
-            lines.add("    Age    : expected '%s' but got '%s'".formatted(expected.getAgeRange(), actual.getAgeRange()));
-        if (!expected.getPrice().equals(actual.getPrice()))
-            lines.add("    Price  : expected '%s' but got '%s'".formatted(expected.getPrice(), actual.getPrice()));
-        return String.join("\n", lines);
     }
 }
