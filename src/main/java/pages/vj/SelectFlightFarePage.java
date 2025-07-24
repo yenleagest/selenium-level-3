@@ -9,14 +9,19 @@ import data.models.vj.Passenger;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
+import reports.AllureManager;
 import utils.LocalizedTextWrapper;
+import utils.FlightUtils;
+import utils.FlightUtils.CheapestFlights;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.codeborne.selenide.Condition.clickable;
 import static com.codeborne.selenide.Condition.visible;
@@ -43,14 +48,13 @@ public class SelectFlightFarePage extends HomePage {
 
     private final String currency = "//span[text()='%s']/following-sibling::span";
     private final String flightDirectionLabel = "//p[contains(@class,'MuiTypography-h2')][text()='%s']";
-    private final String optionByPrice = ".//span[normalize-space(text()) = '%s']";
     private final String optionByDate = "descendant::p[text() = '%s']";
     private final By airportsText = By.xpath("following-sibling::div");
     private final By passengerInfo = By.cssSelector(".MuiTypography-h5[variantmd='h3']");
     private final By monthSlider = By.xpath("following::div[contains(@class,'slick-list')][1]");
     private final By nextMonthBtn = By.xpath("preceding-sibling::button");
     private final By previousMonthBtn = By.xpath("following-sibling::button");
-    private final By currentMonthSlider = By.xpath("following::div[contains(@class,'slick-current')][1]");
+    private final By currentMonthSlider = By.xpath("following::div[contains(@class,'slick-current')][1]//p");
     private final By priceCalendar = By.xpath("parent::div/following-sibling::div[position()=2]");
     private final By selectableOption = By.xpath("descendant::span[normalize-space(text()) != '']");
     private final By dateByPrice = By.xpath("preceding::p[1]");
@@ -62,6 +66,13 @@ public class SelectFlightFarePage extends HomePage {
         FlightInfo flightInfo = new FlightInfo(getCurrency(), getAirportName(direction, AirportType.DEPARTURE), getAirportName(direction, AirportType.DESTINATION), null, getPassengerInfo());
         log.info("{} flight info for: {}", direction, flightInfo);
         return flightInfo;
+    }
+
+    @Step("Find the cheapest tickets for {duration} days trip in next {target} months")
+    public CheapestFlights getCheapestFlights(YearMonth target, int duration) {
+        Map<LocalDate, String> departures = getDatePrices(FlightDirection.DEPARTURE, target);
+        Map<LocalDate, String> returns = getDatePrices(FlightDirection.RETURN, target);
+        return FlightUtils.findCheapest(departures, returns, duration);
     }
 
     @Step("Select the {direction} flight that takes off on {localDate}")
@@ -95,8 +106,13 @@ public class SelectFlightFarePage extends HomePage {
 
     @Step("Align date picker to the month of the given date: {target}")
     private void alignMonthSliderToMonth(YearMonth target, FlightDirection direction) {
-        SelenideElement directionLabel = directionLabel(direction);
         YearMonth current = getCurrentYearMonth(direction);
+        if (current.equals(target)) {
+            return;
+        }
+
+        String prevText = directionLabel(direction).find(priceCalendar).getText();
+        SelenideElement directionLabel = directionLabel(direction);
 
         while (!Objects.requireNonNull(current).equals(target)) {
             if (current.isBefore(target)) directionLabel.find(monthSlider).find(previousMonthBtn).click();
@@ -105,31 +121,19 @@ public class SelectFlightFarePage extends HomePage {
         }
         // wait for the slider to be updated to target month
         directionLabel.find(currentMonthSlider).shouldHave(Condition.text(target.format(YEAR_MONTH_FORMATTER_WITH_FLASH)));
+        directionLabel(direction)
+                .find(priceCalendar)
+                .shouldNotHave(Condition.exactText(prevText));
     }
 
     private YearMonth getCurrentYearMonth(FlightDirection direction) {
         String text = directionLabel(direction)
                 .find(currentMonthSlider)
+                .scrollIntoView("{block: 'center'}")
                 .shouldNotHave(Condition.exactText(""))
-                .getText();
-        Matcher matcher = Pattern.compile("\\d{2}/\\d{4}").matcher(text);
-        if (matcher.find()) {
-            return YearMonth.parse(matcher.group(), YEAR_MONTH_FORMATTER_WITH_FLASH);
-        } else {
-            throw new IllegalStateException("Cannot find year month in format %s in: %s".formatted(YEAR_MONTH_FORMATTER_WITH_FLASH, text));
-        }
-    }
+                .getText().trim();
 
-    public String getCheapestPrice(YearMonth yearMonth, FlightDirection direction) {
-        alignMonthSliderToMonth(yearMonth, direction);
-        return directionLabel(direction)
-                .find(priceCalendar)
-                .findAll(selectableOption)
-                .asDynamicIterable() // avoid StaleElementReferenceException
-                .stream()
-                .min(Comparator.comparingInt(e -> Integer.parseInt(e.getText().replace(",", ""))))
-                .map(SelenideElement::getText)
-                .orElseThrow(() -> new RuntimeException("No prices found"));
+        return YearMonth.parse(text, YEAR_MONTH_FORMATTER_WITH_FLASH);
     }
 
     private void selectFlightByDate(LocalDate localDate, FlightDirection direction) {
@@ -139,13 +143,6 @@ public class SelectFlightFarePage extends HomePage {
                 .find(By.xpath(optionByDate.formatted(localDate.getDayOfMonth())))
                 .shouldBe(clickable)
                 .click();
-    }
-
-
-    @Step("Get take-off date for {direction} flight priced at {price} within {yearMonth}")
-    public LocalDate getTakeOffDateByPrice(FlightDirection direction, YearMonth yearMonth, String price) {
-        String text = directionLabel(direction).find(priceCalendar).$x(optionByPrice.formatted(price)).find(dateByPrice).shouldNotHave(Condition.exactText("")).getText().trim();
-        return yearMonth.atDay(Integer.parseInt(text));
     }
 
     @Step("Click continue button to proceed with flight selection")
@@ -162,6 +159,44 @@ public class SelectFlightFarePage extends HomePage {
     private void waitForPageToBeLoaded() {
         directionLabel(FlightDirection.DEPARTURE).find(priceCalendar).findAll(selectableOption).shouldHave(CollectionCondition.sizeGreaterThan(0));
         directionLabel(FlightDirection.RETURN).find(priceCalendar).findAll(selectableOption).shouldHave(CollectionCondition.sizeGreaterThan(0));
+    }
+
+    private Map<LocalDate, String> getDatePrices(FlightDirection direction, YearMonth target) {
+
+        Map<LocalDate, String> datePrices = new HashMap<>(getDatePrices(direction));
+        YearMonth start = YearMonth.now().plusMonths(1);
+
+        for (YearMonth ym = start; !ym.isAfter(target); ym = ym.plusMonths(1)) {
+            alignMonthSliderToMonth(ym, direction);
+
+            datePrices.putAll(getDatePrices(direction));
+        }
+        return datePrices;
+    }
+
+    private Map<LocalDate, String> getDatePrices(FlightDirection direction) {
+        YearMonth currentMonth = getCurrentYearMonth(direction);
+        Map<LocalDate, String> datePrices;
+
+        datePrices = directionLabel(direction)
+                .find(priceCalendar)
+                .findAll(selectableOption)
+                .asDynamicIterable() // avoid StaleElementReferenceException
+                .stream()
+                .filter(el -> el.find(dateByPrice).shouldNotHave(Condition.exactText("")).getText().trim().matches("\\d+"))
+                .collect(Collectors.toMap(
+                        el -> {
+                            int day = Integer.parseInt(el.find(dateByPrice).getText().trim());
+                            return currentMonth.atDay(day);
+                        },
+                        el -> {
+                            LocalDate date = currentMonth.atDay(Integer.parseInt(el.find(dateByPrice).getText().trim()));
+                            return el.getText().trim();
+                        }
+                ));
+
+        AllureManager.saveLog("Prices for %s flight in month %s".formatted(direction, currentMonth), FlightUtils.formatDatePrices(datePrices));
+        return datePrices;
     }
 }
 

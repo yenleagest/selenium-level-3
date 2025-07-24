@@ -16,6 +16,7 @@ import pages.vj.SelectFlightFarePage;
 import pages.vj.SelectFlightOptionsPage;
 import testcases.TestBase;
 import testdata.VJTestData;
+import utils.FlightUtils.CheapestFlights;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -31,10 +32,10 @@ public class SearchCheapestTicketsInNextThreeMonthsTest extends TestBase {
     FlightInfo departureFlight;
     FlightInfo returnFlight;
     Passenger passenger;
-    YearMonth departureMonth;
-    String lowestPrice;
-    LocalDate departuteDate;
+    YearMonth targetMonth;
+    LocalDate departureDate;
     LocalDate returnDate;
+    CheapestFlights cheapestFlights;
 
     @BeforeMethod(alwaysRun = true)
     public void setUp() {
@@ -45,7 +46,7 @@ public class SearchCheapestTicketsInNextThreeMonthsTest extends TestBase {
         passengerInformationPage = new PassengerInformationPage();
         softAssert = new SoftAssert();
 
-        departureMonth = YearMonth.from(LocalDate.now().plusMonths(3));
+        targetMonth = YearMonth.from(LocalDate.now().plusMonths(3));
         passenger = new Passenger(2, 0, 0);
     }
 
@@ -61,12 +62,12 @@ public class SearchCheapestTicketsInNextThreeMonthsTest extends TestBase {
         softAssert.assertEquals(selectFlightFarePage.getFlightInfo(FlightDirection.DEPARTURE), departureFlight);
         softAssert.assertEquals(selectFlightFarePage.getFlightInfo(FlightDirection.RETURN), returnFlight);
 
-        lowestPrice = selectFlightFarePage.getCheapestPrice(departureMonth, FlightDirection.DEPARTURE);
-        departuteDate = selectFlightFarePage.getTakeOffDateByPrice(FlightDirection.DEPARTURE, departureMonth, lowestPrice);
-        selectFlightFarePage.selectFlightOnSpecificDate(FlightDirection.DEPARTURE, departuteDate);
-        departureFlight.setTakeOffDate(departuteDate);
+        cheapestFlights = selectFlightFarePage.getCheapestFlights(targetMonth, 3);
+        departureDate = cheapestFlights.departureDate();
+        selectFlightFarePage.selectFlightOnSpecificDate(FlightDirection.DEPARTURE, departureDate);
+        departureFlight.setTakeOffDate(departureDate);
 
-        returnDate = departuteDate.plusDays(3);
+        returnDate = cheapestFlights.returnDate();
         selectFlightFarePage.selectFlightOnSpecificDate(FlightDirection.RETURN, returnDate);
         returnFlight.setTakeOffDate(returnDate);
 
