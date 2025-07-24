@@ -9,7 +9,9 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static common.Constants.LEAP_FROG_EXCEL_PATH;
 
@@ -19,14 +21,14 @@ public class ExcelUtils {
      * reads the LeapFrog game information from the Excel file located at {@link common.Constants#LEAP_FROG_EXCEL_PATH}
      * <p>
      * each non-header row in the first sheet of the Excel file is mapped to a {@link GameInfo} object
-     * the resulting map contains 1-based row indices as keys and corresponding {@link GameInfo} objects as values
+     * the resulting list contains {@link GameInfo} objects with their index set to the 1-based row index
      * </p>
      *
-     * @return a {@link HashMap} where each key is the 1-based row index and the value is a {@link GameInfo} extracted from that row
+     * @return a {@link List} of {@link GameInfo} extracted from the Excel file
      * @throws RuntimeException if there is an error reading the Excel file or if the file is empty or malformed
      */
-    public static HashMap<Integer, GameInfo> getLeapFrogGameInfo() {
-        HashMap<Integer, GameInfo> gameMap = new HashMap<>();
+    public static List<GameInfo> getLeapFrogGameInfo() {
+        List<GameInfo> gameList = new ArrayList<>();
 
         try (
                 FileInputStream input = new FileInputStream(LEAP_FROG_EXCEL_PATH);
@@ -44,14 +46,15 @@ public class ExcelUtils {
                 if (row.getRowNum() == 0) continue; // skip header row
 
                 GameInfo gameInfo = parseRow(row, columnIndexMap);
-                gameMap.put(row.getRowNum() + 1, gameInfo); // 1-based index
+                gameInfo.setIndex(row.getRowNum() + 1); // 1-based index
+                gameList.add(gameInfo);
             }
 
         } catch (Exception e) {
             throw new RuntimeException("Error reading Excel file", e);
         }
 
-        return gameMap;
+        return gameList;
     }
 
     private static HashMap<String, Integer> extractColumnIndices(Sheet sheet) {
@@ -68,7 +71,7 @@ public class ExcelUtils {
         String title = getCellValue(row.getCell(columnIndexMap.get("title"), MissingCellPolicy.RETURN_BLANK_AS_NULL));
         String ageRange = getCellValue(row.getCell(columnIndexMap.get("age"), MissingCellPolicy.RETURN_BLANK_AS_NULL));
         String price = getCellValue(row.getCell(columnIndexMap.get("price"), MissingCellPolicy.RETURN_BLANK_AS_NULL));
-        return new GameInfo(title, ageRange, price);
+        return new GameInfo(row.getRowNum(), title, ageRange, price);
     }
 
     private static String getCellValue(Cell cell) {

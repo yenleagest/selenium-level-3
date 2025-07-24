@@ -152,9 +152,14 @@ cd %USERPROFILE%\selenium-server
 ##### Run Selenium Grid:
 
 ```sh
-java -jar <jar_file_name> standalone, for e.g.
-java -jar selenium-server-4.29.0.jar standalone
+java -jar selenium-server-4.29.0.jar standalone \
+--max-sessions 5 \
+--driver-implementation "chrome" --driver-implementation "edge" \
+--selenium-manager true
 ```
+- `--max-sessions`: Sets the maximum number of concurrent WebDriver sessions the Grid can run. By default, this equals the number of available processor cores. To exceed that limit, add the `--override-max-sessions true` flag. Be cautious — increasing this value may impact session stability and resource availability on the host machine.
+- `--driver-implementation`: Skip autoconfiguration by explicitly specifying which browser drivers (e.g., chrome, edge, firefox) to enable and display on the Grid UI. You can add multiple drivers by repeating the flag.
+- `--selenium-manager`: Enables Selenium Manager to automatically download and configure browser drivers if they’re not already present on your system.
 
 ##### Stop Selenium Grid:
 

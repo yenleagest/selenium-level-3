@@ -9,10 +9,10 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.yenleagest.ShadowUtils;
 
 import java.util.List;
-import java.util.Objects;
 
 import static com.codeborne.selenide.Selectors.shadowDeepCss;
 import static com.codeborne.selenide.Selenide.$$;
+import static utils.BooksUtils.filterResults;
 
 @Slf4j
 public class SearchResultsPage extends HomePage {
@@ -20,8 +20,9 @@ public class SearchResultsPage extends HomePage {
     @Step("Do all search results contain {keyword}")
     public boolean doAllResultsContainKeyword(LocatorStrategy strategy, String keyword) {
         List<String> titles = strategy == LocatorStrategy.SELENIDE ? getBookTitleWithSelenide() : getBookTitleFromWithSelenium();
-        return Objects.requireNonNull(titles).stream()
-                      .allMatch(title -> title.toLowerCase().contains(keyword.toLowerCase()));
+        List<String> nonMatchingTitles = filterResults(titles, keyword);
+
+        return nonMatchingTitles.isEmpty();
     }
 
     @Step("Get book title from search results")
@@ -32,20 +33,15 @@ public class SearchResultsPage extends HomePage {
             log.error("No search results displayed for the given keyword: {}", e.getMessage());
             return List.of(); // return an empty list if no results are found
         }
-        List<String> titles = $$(shadowDeepCss(".books li .title-container")).stream()
-                                                                             .map(el -> el.getText().trim())
-                                                                             .toList();
-        log.info("Results title: {}", titles);
-        return titles;
+        return $$(shadowDeepCss(".books li .title-container")).stream()
+                                                              .map(el -> el.getText().trim()).toList();
     }
 
     @Step("Get book title from search results")
     private List<String> getBookTitleFromWithSelenium() {
         waitForResultsToLoad();
-        List<String> titles = getAllResultsWithRetry().stream().map(el -> el.getText().trim())
-                                                      .toList();
-        log.info("Results title: {}", titles);
-        return titles;
+        return getAllResultsWithRetry().stream().map(el -> el.getText().trim())
+                                       .toList();
     }
 
     private List<WebElement> getAllResultsWithRetry() {

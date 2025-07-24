@@ -22,7 +22,7 @@ public class AllureManager {
     }
 
     public static void saveLog(String name, String message) {
-        log.info(message);
+        log.info("{}: {}", name, message);
         Allure.addAttachment(name, "text/plain", message);
     }
 }
