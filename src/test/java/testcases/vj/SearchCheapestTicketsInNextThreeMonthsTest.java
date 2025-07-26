@@ -13,10 +13,10 @@ import org.testng.asserts.SoftAssert;
 import pages.vj.HomePage;
 import pages.vj.PassengerInformationPage;
 import pages.vj.SelectFlightFarePage;
+import pages.vj.SelectFlightFarePage.CheapestFlights;
 import pages.vj.SelectFlightOptionsPage;
 import testcases.TestBase;
 import testdata.VJTestData;
-import utils.FlightUtils.CheapestFlights;
 
 import java.time.LocalDate;
 import java.time.YearMonth;

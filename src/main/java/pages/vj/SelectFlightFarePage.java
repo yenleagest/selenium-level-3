@@ -11,8 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import reports.AllureManager;
 import utils.LocalizedTextWrapper;
-import utils.FlightUtils;
-import utils.FlightUtils.CheapestFlights;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -46,6 +44,9 @@ public class SelectFlightFarePage extends HomePage {
         DEPARTURE, DESTINATION
     }
 
+    public static record CheapestFlights(LocalDate departureDate, String departurePrice, LocalDate returnDate, String returnPrice) {
+    }
+
     private final String currency = "//span[text()='%s']/following-sibling::span";
     private final String flightDirectionLabel = "//p[contains(@class,'MuiTypography-h2')][text()='%s']";
     private final String optionByDate = "descendant::p[text() = '%s']";
@@ -72,7 +73,7 @@ public class SelectFlightFarePage extends HomePage {
     public CheapestFlights getCheapestFlights(YearMonth target, int duration) {
         Map<LocalDate, String> departures = getDatePrices(FlightDirection.DEPARTURE, target);
         Map<LocalDate, String> returns = getDatePrices(FlightDirection.RETURN, target);
-        return FlightUtils.findCheapest(departures, returns, duration);
+        return findCheapest(departures, returns, duration);
     }
 
     @Step("Select the {direction} flight that takes off on {localDate}")
@@ -183,20 +184,82 @@ public class SelectFlightFarePage extends HomePage {
                 .findAll(selectableOption)
                 .asDynamicIterable() // avoid StaleElementReferenceException
                 .stream()
-                .filter(el -> el.find(dateByPrice).shouldNotHave(Condition.exactText("")).getText().trim().matches("\\d+"))
+                .filter(this::isValidDayElement)
                 .collect(Collectors.toMap(
-                        el -> {
-                            int day = Integer.parseInt(el.find(dateByPrice).getText().trim());
-                            return currentMonth.atDay(day);
-                        },
-                        el -> {
-                            LocalDate date = currentMonth.atDay(Integer.parseInt(el.find(dateByPrice).getText().trim()));
-                            return el.getText().trim();
-                        }
+                        el -> extractDate(el, currentMonth),
+                        this::extractPrice
                 ));
 
-        AllureManager.saveLog("Prices for %s flight in month %s".formatted(direction, currentMonth), FlightUtils.formatDatePrices(datePrices));
+        AllureManager.saveLog("Prices for %s flight in month %s".formatted(direction, currentMonth), formatDatePrices(datePrices));
         return datePrices;
     }
+
+    private boolean isValidDayElement(SelenideElement element) {
+        String text = element.find(dateByPrice).shouldNotHave(Condition.exactText("")).getText().trim();
+        return text.matches("\\d+");
+    }
+
+    private String extractPrice(SelenideElement element) {
+        return element.getText().trim();
+    }
+
+    private LocalDate extractDate(SelenideElement element, YearMonth currentMonth) {
+        int day = Integer.parseInt(element.find(dateByPrice).getText().trim());
+        return currentMonth.atDay(day);
+    }
+
+    private CheapestFlights findCheapest(Map<LocalDate, String> departures, Map<LocalDate, String> returns, int duration) {
+        int minSum = Integer.MAX_VALUE;
+        CheapestFlights result = null;
+
+        for (Map.Entry<LocalDate, String> dep : departures.entrySet()) {
+            LocalDate departureDate = dep.getKey();
+            LocalDate returnDate = departureDate.plusDays(duration);
+            String departurePrice = dep.getValue().trim();
+
+            if (!returns.containsKey(returnDate)) continue;  // when departure date + duration exceeds available return dates
+            String returnPrice = returns.get(returnDate).trim();
+
+            try {
+                int depVal = Integer.parseInt(departurePrice.replaceAll("\\D", ""));
+                int retVal = Integer.parseInt(returnPrice.replaceAll("\\D", ""));
+                int sum = depVal + retVal;
+
+                if (sum < minSum) {
+                    minSum = sum;
+                    result = new CheapestFlights(departureDate, departures.get(departureDate), returnDate, returns.get(returnDate));
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(
+                        "Invalid price format for combination of %s".formatted(
+                                new CheapestFlights(departureDate, departures.get(departureDate), returnDate, returns.get(returnDate))
+                        ),
+                        e
+                );
+            }
+        }
+
+        AllureManager.saveLog(
+                "Cheapest flight found\n",
+                      """
+                        • Departure: %s — Price: %s
+                        • Return   : %s — Price: %s
+                      """.formatted(
+                      Objects.requireNonNull(result).departureDate,
+                      result.departurePrice,
+                      result.returnDate,
+                      result.returnPrice
+                )
+        );
+
+        return result;
+    }
+
+    private String formatDatePrices(Map<LocalDate, String> datePrices) {
+        StringBuilder sb = new StringBuilder("\n");
+        datePrices.forEach((date, price) -> sb.append("• %s: %s%n".formatted(date, price)));
+        return sb.toString();
+    }
 }
+
 
