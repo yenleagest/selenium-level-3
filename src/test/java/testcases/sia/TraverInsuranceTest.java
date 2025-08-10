@@ -47,7 +47,7 @@ public class TraverInsuranceTest extends TestBase {
 
         travellersPage.submitTravellers(data.getTravellers(), data.getAges());
 
-        plansPage.pickAPlan(data.getPlan());
+        plansPage.pickPlan(data.getPlan());
 
         adOnsPage.selectAdOns(data.getAddOns());
 

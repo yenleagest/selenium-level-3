@@ -10,7 +10,7 @@ public class PlansPage extends HomePage {
     private final String planButtonByDataPlan = ".btn-green[data-plan='%s']";
 
     @Step("Pick {plan} plan")
-    public void pickAPlan(Plans plan) {
+    public void pickPlan(Plans plan) {
         $(planButtonByDataPlan.formatted(plan.getDataPlan())).click();
     }
 }

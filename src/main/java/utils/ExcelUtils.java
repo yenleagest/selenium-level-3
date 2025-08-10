@@ -154,8 +154,8 @@ public class ExcelUtils {
             throw new IllegalStateException("Number of travellers does not match number of ages provided.");
         data.setAges(ages);
 
-        data.setPlan(Plans.fromString(record.get(columnIndexMap.get("plans")).trim()));
-        data.setAddOns(AdOns.fromString(record.get(columnIndexMap.get("ad-ons")).trim()));
+        data.setPlan(Plans.valueOf(record.get(columnIndexMap.get("plans")).trim().toUpperCase()));
+        data.setAddOns(AdOns.valueOf(record.get(columnIndexMap.get("ad-ons")).trim().toUpperCase()));
         data.setPrice(record.get(columnIndexMap.get("expected price")).trim());
 
         return data;

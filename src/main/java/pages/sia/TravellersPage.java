@@ -1,9 +1,9 @@
 package pages.sia;
 
-import com.github.javafaker.Faker;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
+import utils.TravellerUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -19,6 +19,7 @@ public class TravellersPage extends HomePage {
     private final String travellerNameByIndex = "//span[@class='tcount'][text()=%d]/following::input[@placeholder='Name']";
     private final String travellerDOBByIndex = "//span[@class='tcount'][text()=%d]/following::input[@placeholder='Date of Birth']";
 
+    @Step("Submit {travellers} travellers with ages: {ages}")
     public void submitTravellers(int travellers, int[] ages) {
         addTravellers(travellers, ages);
         goToPlansPage();
@@ -28,8 +29,9 @@ public class TravellersPage extends HomePage {
         for (int i = 1; i <= travellers; i++) {
             if (i != 1)
                 $(addTraveller).click();
-            setTravellerName(i, getTravellerName());
-            setTravellerDOB(i, getTravellerDOB(ages[i-1]));
+
+            setTravellerName(i, TravellerUtils.getTravellerName());
+            setTravellerDOB(i, TravellerUtils.getTravellerDOB(ages[i-1]));
         }
     }
 
@@ -46,16 +48,5 @@ public class TravellersPage extends HomePage {
     @Step("Go to Plans page")
     public void goToPlansPage() {
         $(continueButton).click();
-    }
-
-    private String getTravellerName() {
-        Faker faker = new Faker();
-        // remove any special characters from the name, like "Ms." "O'Connell"
-        // which are not allowed by the input validation
-        return faker.name().fullName().replaceAll("[^a-zA-Z\\s]", "");
-    }
-
-    private LocalDate getTravellerDOB(int age) {
-        return LocalDate.now().minusYears(age);
     }
 }
