@@ -1,9 +1,9 @@
 package pages.sia;
 
+import data.models.sia.Traveller;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
-import utils.TravellerUtils;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -29,9 +29,10 @@ public class TravellersPage extends HomePage {
         for (int i = 1; i <= travellers; i++) {
             if (i != 1)
                 $(addTraveller).click();
+            Traveller traveller = Traveller.fromAge(ages[i-1]);
 
-            setTravellerName(i, TravellerUtils.getTravellerName());
-            setTravellerDOB(i, TravellerUtils.getTravellerDOB(ages[i-1]));
+            setTravellerName(i, traveller.getName());
+            setTravellerDOB(i, traveller.getDob());
         }
     }
 
