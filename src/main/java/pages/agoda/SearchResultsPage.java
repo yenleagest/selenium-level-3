@@ -9,7 +9,6 @@ import drivers.DriverUtils;
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,8 +140,7 @@ public class SearchResultsPage extends HomePage {
     private void setFilterPrice(By locator, int value) {
         SelenideElement element = $(locator);
         element.clear();
-        element.setValue(String.valueOf(value));
-        element.sendKeys(Keys.ENTER);
+        element.setValue(String.valueOf(value)).pressEnter();
         $$(By.className(cardContainer)).last().shouldBe(visible);
     }
 

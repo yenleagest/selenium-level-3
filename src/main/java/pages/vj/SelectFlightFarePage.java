@@ -14,6 +14,7 @@ import utils.LocalizedTextWrapper;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.TemporalAdjusters;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -59,6 +60,7 @@ public class SelectFlightFarePage extends HomePage {
     private final By priceCalendar = By.xpath("parent::div/following-sibling::div[position()=2]");
     private final By selectableOption = By.xpath("descendant::span[normalize-space(text()) != '']");
     private final By dateByPrice = By.xpath("preceding::p[1]");
+    private final By priceByDate = By.xpath("following-sibling::div");
     private final By continueBtn = By.cssSelector("span.MuiButton-label span");
 
     @Step("Get flight info for {direction} flight")
@@ -112,8 +114,8 @@ public class SelectFlightFarePage extends HomePage {
             return;
         }
 
-        String prevText = directionLabel(direction).find(priceCalendar).getText();
         SelenideElement directionLabel = directionLabel(direction);
+        String prevText = directionLabel.find(priceCalendar).getText();
 
         while (!Objects.requireNonNull(current).equals(target)) {
             if (current.isBefore(target)) directionLabel.find(monthSlider).find(previousMonthBtn).click();
@@ -122,15 +124,15 @@ public class SelectFlightFarePage extends HomePage {
         }
         // wait for the slider to be updated to target month
         directionLabel.find(currentMonthSlider).shouldHave(Condition.text(target.format(YEAR_MONTH_FORMATTER_WITH_FLASH)));
-        directionLabel(direction)
-                .find(priceCalendar)
-                .shouldNotHave(Condition.exactText(prevText));
+        directionLabel.find(priceCalendar).shouldNotHave(Condition.exactText(prevText));
     }
 
     private YearMonth getCurrentYearMonth(FlightDirection direction) {
+        if (direction == FlightDirection.RETURN)
+            $(continueBtn).scrollIntoView("{block: 'center'}");
+
         String text = directionLabel(direction)
                 .find(currentMonthSlider)
-                .scrollIntoView("{block: 'center'}")
                 .shouldNotHave(Condition.exactText(""))
                 .getText().trim();
 
@@ -138,11 +140,15 @@ public class SelectFlightFarePage extends HomePage {
     }
 
     private void selectFlightByDate(LocalDate localDate, FlightDirection direction) {
-        directionLabel(direction)
-                .find(priceCalendar)
-                .shouldBe(visible)
-                .find(By.xpath(optionByDate.formatted(localDate.getDayOfMonth())))
-                .shouldBe(clickable)
+        SelenideElement calendar = directionLabel(direction).find(priceCalendar);
+        // wait for the last option to be loaded completely
+        int lastDayOfMonth = localDate.with(TemporalAdjusters.lastDayOfMonth()).getDayOfMonth();
+        calendar.find(By.xpath(optionByDate.formatted(lastDayOfMonth))).find(priceByDate)
+                .shouldNotHave(Condition.exactText(""))
+                .shouldBe(clickable);
+
+        calendar.find(By.xpath(optionByDate.formatted(localDate.getDayOfMonth())))
+                .scrollIntoView("{block: 'center'}")
                 .click();
     }
 
@@ -240,15 +246,12 @@ public class SelectFlightFarePage extends HomePage {
         }
 
         AllureManager.saveLog(
-                "Cheapest flight found\n",
-                      """
-                        • Departure: %s — Price: %s
-                        • Return   : %s — Price: %s
-                      """.formatted(
-                      Objects.requireNonNull(result).departureDate,
-                      result.departurePrice,
-                      result.returnDate,
-                      result.returnPrice
+                "Cheapest flight found",
+                "\n• Departure: %s — Price: %s\n• Return   : %s — Price: %s".formatted(
+                        Objects.requireNonNull(result).departureDate,
+                        result.departurePrice,
+                        result.returnDate,
+                        result.returnPrice
                 )
         );
 

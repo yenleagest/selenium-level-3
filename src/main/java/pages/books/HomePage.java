@@ -30,8 +30,7 @@ public class HomePage {
 
     private void searchWithSelenide(String keyword) {
         SelenideElement element = $(shadowDeepCss(searchLocator));
-        element.setValue(keyword);
-        element.sendKeys(Keys.ENTER);
+        element.setValue(keyword).pressEnter();
     }
 
     private void searchWithSelenium(String keyword) {

@@ -21,9 +21,11 @@ import java.util.Comparator;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import static com.codeborne.selenide.Condition.clickable;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.$$x;
 import static com.codeborne.selenide.Selenide.$x;
 import static common.Constants.ENGLISH_DATE_FORMATTER;
 import static common.Constants.ENVIRONMENT;
@@ -47,6 +49,7 @@ public class SelectFlightOptionsPage extends HomePage {
     private final By flightsPrice = By.cssSelector("p.MuiTypography-h4:not([variantlg='h3']");
     private final By takeOffDate = By.cssSelector(".slick-active.slick-center div p:nth-child(2)");
     private final By flightDetailsPanel = By.cssSelector(".MuiCollapse-container.MuiCollapse-entered");
+    private final String scheduledFlights = "//div[contains(@class, 'MuiGrid-container')]//span[text()='%s']//ancestor::div[contains(@class,'MuiBox-root')]";
     private final String flightByPrice = "//p[contains(@class, 'MuiTypography-h4')][text()='%s']";
     private final String continueBtn = "//span[contains(@class, 'MuiTypography-h4')][text()='%s']";
     private final String reservationInfo = "//p[text()='%s']/ancestor::div//h4[text()='%s']/following-sibling::h4";
@@ -78,7 +81,8 @@ public class SelectFlightOptionsPage extends HomePage {
     }
 
     private void selectFlightByPrice(String price) {
-        $x(flightByPrice.formatted(price)).shouldBe(visible).click();
+        scrollTillAllFlightsLoaded();
+        $x(flightByPrice.formatted(price)).scrollIntoView("{block: 'center'}").shouldBe(clickable).click();
         $(flightDetailsPanel).shouldBe(visible);
     }
 
@@ -140,5 +144,28 @@ public class SelectFlightOptionsPage extends HomePage {
                 .min(Comparator.comparingInt(e -> Integer.parseInt(e.getText().replace(",", ""))))
                 .map(SelenideElement::getText)
                 .orElseThrow(() -> new RuntimeException("No prices found"));
+    }
+
+    private void scrollTillAllFlightsLoaded() {
+        int counter = 0;
+        ElementsCollection flights = getScheduledFlights();
+        int prevSize = flights.size();
+
+        while (counter < 20) {
+            // scroll to the last flight element to load more flights
+            flights.last().scrollIntoView("{block: 'center'}").shouldBe(visible);
+
+            // if the number of flights has changed
+            if (prevSize < getScheduledFlights().size()) {
+                counter = 0; // reset the counter
+                flights = getScheduledFlights(); // reassign the collection
+                prevSize = flights.size(); // and update prevSize
+            } else counter++; // if the size has not changed, increase the counter
+        }
+    }
+
+    private ElementsCollection getScheduledFlights() {
+        return $$x(scheduledFlights.formatted(localizedText.get(LocalizedText.DESTINATION_LABEL)))
+                .shouldHave(CollectionCondition.sizeGreaterThan(0));
     }
 }

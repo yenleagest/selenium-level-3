@@ -14,9 +14,9 @@ automated UI tests.
 - [x] Reports: HTML, Allure Report, Report Portal
 - [x] Test retry: test failed ⇒ retry (1, 2)
 - [x] Parallel/distributed testing
-- [x] Cross browsers testing: Chrome, Edge
+- [x] Cross-browsers testing: Chrome, Edge
 - [x] Selenium Grid/Shard
-- [ ] Test cases: VJ, Agoda, TBD (7/8 - 3 Agoda tests, a Shadow DOM test, 2 VJ tests, and a content testing test)
+- [x] Test cases: VJ, Agoda, TBD, content testing, data-driven testing
 - [x] CI: Schedule test, send email notification result with summary
 
 ### User Cases
@@ -27,7 +27,7 @@ automated UI tests.
 - [x] Source control practice: branch
 - [x] Switch test environment: dev, stg (dev: agoda.com, stg: vj.com)
 - [x] Wrap custom controls
-- [ ] Data driven testing: test data is in excel file
+- [x] Data driven testing: test data is in an Excel file
 - [x] Working with Shadow DOM
 - [ ] Compare with another FW e.g. Playwright
 
@@ -54,7 +54,9 @@ automated UI tests.
 ├── src
 │   ├── main
 │   │   ├── java
+│   │   │   ├── clients                # API client classes to handle HTTP requests and responses
 │   │   │   ├── common                 # Common constants used across the project
+│   │   │   ├── controls               # Custom control classes for wrapping complex UI elements, e.g., date pickers
 │   │   │   ├── data                   # Enums and model classes for handling structured UI data shared across pages
 │   │   │   ├── drivers                # WebDriver/Selenide utilities to initialize, manage, and quit the browser
 │   │   │   ├── pages                  # Page Object Model (POM) classes representing UI elements and actions per page
@@ -62,6 +64,7 @@ automated UI tests.
 │   │   │   ├── testdata               # Data provider classes to supply test data parsed from YAML files
 │   │   │   └── utils                  # Helper utilities like YAML file parsers
 │   │   └── resources
+│   │       ├── locales                # Localization files for multi-language support, e.g., English, Vietnamese
 │   │       └── log4j2.xml             # Configuration file for log4j2 logging system
 │   └── test
 │       ├── java
@@ -70,7 +73,7 @@ automated UI tests.
 │       │   └── testcases              # End-to-end test classes, grouped by environment (e.g., Agoda, VJ)
 │       └── resources
 │           ├── suites                 # TestNG suite XML files organized by environment (e.g., AgodaRegression.xml)
-│           ├── testdata               # YAML files containing test case-specific data grouped by method
+│           ├── testdata               # Data files for test cases, e.g., csv files for data-driven tests
 │           └── selenide.properties    # Selenide-specific configuration for browser behavior (e.g., size, timeout)
 ```
 
@@ -214,23 +217,25 @@ mvn clean test \
   -Dparallel=methods \
   -DthreadCount=5 \
   -DmaxRetry=3 \
-  -DretryStrategy=post-suite
+  -DretryStrategy=post-suite \
+  -DdataDrivenOutput=true
   ```
 
-| Parameter                     | Description                                                                  |
-|-------------------------------|------------------------------------------------------------------------------|
-| `-Dselenide.browser`          | Specifies the browser to use (`chrome`, `firefox`, `edge`, `safari`).        |
-| `-Dselenide.headless`         | Enables headless mode (`true` or `false`) for browser execution.             |
-| `-Dselenide.timeout`          | Sets the default timeout (in milliseconds) for element waits.                |
-| `-Dselenide.pageLoadStrategy` | Controls how the browser waits for page loading (`normal`, `eager`, `none`). |
-| `-Dselenide.remote`           | URL of the remote Selenium Grid server (only needed for remote execution).   |
-| `-Dselenide.baseUrl`          | Base URL of the application under test.                                      |
-| `-Dsurefire.suiteXmlFiles`    | Path to the TestNG XML suite file to execute.                                |
-| `-Dgroups`                    | Specifies which test group(s) to run (e.g., `smoke`, `regression`).          |
-| `-Dparallel`                  | Specifies parallel execution mode (`classes`, `methods`, or `tests`).        |
-| `-DthreadCount`               | Number of threads to use when running tests in parallel.                     |
-| `-DmaxRetry`                  | Maximum number of retry attempts for failed tests.                           |
-| `-DretryStrategy`             | Retry strategy to apply (`immediate` or `post-suite`).                       |
+| Parameter                     | Description                                                                              |
+|-------------------------------|------------------------------------------------------------------------------------------|
+| `-Dselenide.browser`          | Specifies the browser to use (`chrome`, `firefox`, `edge`, `safari`).                    |
+| `-Dselenide.headless`         | Enables headless mode (`true` or `false`) for browser execution.                         |
+| `-Dselenide.timeout`          | Sets the default timeout (in milliseconds) for element waits.                            |
+| `-Dselenide.pageLoadStrategy` | Controls how the browser waits for page loading (`normal`, `eager`, `none`).             |
+| `-Dselenide.remote`           | URL of the remote Selenium Grid server (only needed for remote execution).               |
+| `-Dselenide.baseUrl`          | Base URL of the application under test.                                                  |
+| `-Dsurefire.suiteXmlFiles`    | Path to the TestNG XML suite file to execute.                                            |
+| `-Dgroups`                    | Specifies which test group(s) to run (e.g., `smoke`, `regression`).                      |
+| `-Dparallel`                  | Specifies parallel execution mode (`classes`, `methods`, or `tests`).                    |
+| `-DthreadCount`               | Number of threads to use when running tests in parallel.                                 |
+| `-DmaxRetry`                  | Maximum number of retry attempts for failed tests.                                       |
+| `-DretryStrategy`             | Retry strategy to apply (`immediate` or `post-suite`).                                   |
+| `-DdataDrivenOutput`          | Defines where to save output for a data-driven test in its input file (default `false`). |
 
 ### 3️⃣ View Allure Report
 

@@ -1,7 +1,6 @@
 package utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -26,7 +25,7 @@ public class YmlParser {
             throw new IllegalStateException("Test data file not found at: ".concat(RESOURCE_TEST_DATA_PATH), e);
         }
 
-        Yaml yaml = new Yaml(new Constructor(testDataClass, new LoaderOptions()));
+        Yaml yaml = new Yaml(new Constructor(testDataClass));
         Iterable<Object> loaded = yaml.loadAll(inputStream);
 
         return StreamSupport.stream(loaded.spliterator(), false)

@@ -113,10 +113,9 @@ public class HomePage {
         DatePicker datePicker = new DatePicker(
                 $(rdrMonthName),
                 $(nextMonthBtn),
-                $(previousMonthBtn),
-                $x(selectableDate.formatted(ENVIRONMENT == Environment.VJ_VI ? yearMonth.toLowerCase() : yearMonth, date.getDayOfMonth()))
+                $(previousMonthBtn)
         );
-        datePicker.selectDate(date);
+        datePicker.selectDate(date, $x(selectableDate.formatted(ENVIRONMENT == Environment.VJ_VI ? yearMonth.toLowerCase() : yearMonth, date.getDayOfMonth())));
     }
 
     @Step("Submit passenger: {passenger}")

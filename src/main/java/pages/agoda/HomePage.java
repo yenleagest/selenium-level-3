@@ -145,10 +145,9 @@ public class HomePage {
         DatePicker datePicker = new DatePicker(
                 $(datePickerCaption),
                 $(nextMonthBtn),
-                $(previousMonthBtn),
-                $(selectableDate.formatted(date))
+                $(previousMonthBtn)
         );
-        datePicker.selectDate(date);
+        datePicker.selectDate(date, $(selectableDate.formatted(date)));
     }
 
     @Step("Close app download ads if displayed")

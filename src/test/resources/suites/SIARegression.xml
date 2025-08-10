@@ -1,0 +1,12 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="SIARegression">
+    <listeners>
+        <listener class-name="listeners.TestListener"/>
+        <listener class-name="listeners.SuiteListener"/>
+    </listeners>
+    <test name="SIARegression">
+        <classes>
+            <class name="testcases.sia.TraverInsuranceTest"/>
+        </classes>
+    </test>
+</suite>
