@@ -4,6 +4,7 @@ import data.enums.sia.AdOns;
 import data.enums.sia.Plans;
 import data.models.leapfrog.GameInfo;
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -14,7 +15,7 @@ import testdata.SIATestData;
 
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.PrintWriter;
+import java.io.FileWriter;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -162,14 +163,9 @@ public class ExcelUtils {
     }
 
     private static void writeToCSV(List<String[]> updatedRows, String filePath) {
-        try (PrintWriter writer = new PrintWriter(filePath)) {
+        try (CSVPrinter printer = new CSVPrinter(new FileWriter(filePath), CSVFormat.DEFAULT)) {
             for (String[] row : updatedRows) {
-                for (int i = 0; i < row.length; i++) {
-                    String cellValue = row[i];
-                    writer.print(cellValue);
-                    if (i < row.length - 1) writer.print(",");
-                }
-                writer.println();
+                printer.printRecord((Object[]) row);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error writing CSV file", e);
