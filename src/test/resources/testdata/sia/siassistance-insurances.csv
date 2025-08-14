@@ -1,0 +1,12 @@
+﻿,Home Page,,,Travellers Page,,Plans Page,Ad-ons Page,Personal Info Page,Test Results,
+No.,Departure,Destination,Trip Long,Travellers,Ages,Plans,Ad-ons,Expected Price,Actual Price,Result
+1,Finland,Germany,1,1,35,silver,single,$ 101.72,,
+2,Vietnam,Ghana,2,2,27 33,gold,none,$ 233.76,,
+3,Thailand,Hong Kong,3,3,25 56 55,silver,none,$ 307.49,,
+4,Italy,Luxembourg,4,1,60,gold,multiple,$ 202.17,,
+5,Monaco,China,5,2,42 45,silver,single,$ 220.26,,
+6,Serbia,Namibia,6,3,3 27 32,gold,single,$ 399.93,,
+7,United States of America,Maldives,7,1,18,global,none,$ 83.19,,
+8,Myanmar,Czech Republic,8,2,15 21,gold,none,$ 259.04,,
+9,Netherlands,Romania,9,3,26 46 50,silver,multiple,$ 409.58,,
+10,Taiwan,Argentina,10,1,42,gold,single,$ 155.42,,

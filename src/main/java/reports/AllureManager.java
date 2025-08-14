@@ -7,7 +7,10 @@ import io.qameta.allure.selenide.AllureSelenide;
 import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.OutputType;
 
+import java.io.FileInputStream;
 import java.util.Base64;
+
+import static common.Constants.SIA_EXCEL_PATH;
 
 @Slf4j
 public class AllureManager {
@@ -24,5 +27,13 @@ public class AllureManager {
     public static void saveLog(String name, String message) {
         log.info("{}: {}", name, message);
         Allure.addAttachment(name, "text/plain", message);
+    }
+
+    public static void attachSIADataFile() {
+        try (FileInputStream fis = new FileInputStream(SIA_EXCEL_PATH)) {
+            Allure.addAttachment("siassistance-insurances.csv", "text/csv", fis, ".csv");
+        } catch (Exception e) {
+            log.error("Failed to attach CSV file: {}", e.getMessage());
+        }
     }
 }

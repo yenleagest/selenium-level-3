@@ -22,18 +22,16 @@ public class DatePicker {
     private final SelenideElement calendar;
     private final SelenideElement nextMonthBtn;
     private final SelenideElement previousMonthBtn;
-    private final SelenideElement selectableDate;
 
-    public DatePicker(SelenideElement calendar, SelenideElement nextMonthBtn, SelenideElement previousMonthBtn, SelenideElement targetDate) {
+    public DatePicker(SelenideElement calendar, SelenideElement nextMonthBtn, SelenideElement previousMonthBtn) {
         this.calendar = calendar;
         this.nextMonthBtn = nextMonthBtn;
         this.previousMonthBtn = previousMonthBtn;
-        this.selectableDate = targetDate;
     }
 
-    public void selectDate(LocalDate targetDate) {
+    public void selectDate(LocalDate targetDate, SelenideElement targetDateElement) {
         alignDatePickerToMonth(targetDate);
-        selectableDate.click();
+        targetDateElement.click();
     }
 
     private void alignDatePickerToMonth(LocalDate targetDate) {

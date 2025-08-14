@@ -15,6 +15,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
+import static common.Constants.DATA_DRIVEN_OUTPUT;
+
 
 public class TestListener implements ITestListener, IAnnotationTransformer {
 
@@ -48,5 +50,8 @@ public class TestListener implements ITestListener, IAnnotationTransformer {
     @Override
     public void transform(ITestAnnotation annotation, Class testClass, Constructor testConstructor, Method testMethod) {
         annotation.setRetryAnalyzer(RetryAnalyzer.class);
+        if ("attachFinalExcelReport".equals(testMethod.getName()) && !DATA_DRIVEN_OUTPUT)
+            // using annotation.setEnabled() will result an unknown test in the report
+            annotation.setGroups(new String[]{"disabled"});
     }
 }

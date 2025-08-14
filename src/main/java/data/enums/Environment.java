@@ -11,6 +11,7 @@ public enum Environment {
     AGODA("https://www.agoda.com"),
     BOOKS("https://books-pwakit.appspot.com"),
     LEAPFROG("https://store.leapfrog.com"),
+    SIA("https://siassistance.com/en"),
     VJ_VI("https://www.vietjetair.com/vi"),
     VJ_EN("https://www.vietjetair.com/en");
 
